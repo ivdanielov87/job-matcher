@@ -1,0 +1,371 @@
+// Bootstrap and Bootstrap Icons are imported as pre-compiled CSS in layout.tsx
+// This file contains only custom styles using CSS custom properties.
+
+// ── Google Font ──────────────────────────────────────────────────────────────
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+// ── Override Bootstrap CSS variables ─────────────────────────────────────────
+:root,
+[data-bs-theme="light"] {
+  --bs-primary:            #4361ee;
+  --bs-primary-rgb:        67, 97, 238;
+  --bs-success:            #2dc653;
+  --bs-success-rgb:        45, 198, 83;
+  --bs-warning:            #f4a942;
+  --bs-warning-rgb:        244, 169, 66;
+  --bs-danger:             #e63946;
+  --bs-danger-rgb:         230, 57, 70;
+
+  --score-excellent:       #2dc653;
+  --score-good:            #f4a942;
+  --score-partial:         #e63946;
+  --card-shadow:           0 2px 12px rgba(0, 0, 0, 0.08);
+  --card-shadow-hover:     0 6px 24px rgba(0, 0, 0, 0.14);
+}
+
+[data-bs-theme="dark"] {
+  --card-shadow:           0 2px 12px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover:     0 6px 24px rgba(0, 0, 0, 0.5);
+  --score-excellent:       #2dc653;
+  --score-good:            #f4a942;
+  --score-partial:         #e63946;
+}
+
+// ── Base ─────────────────────────────────────────────────────────────────────
+html, body {
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+// ── Navbar ───────────────────────────────────────────────────────────────────
+.navbar-brand-logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: var(--bs-body-color);
+  text-decoration: none;
+
+  span { color: var(--bs-primary); }
+}
+
+// ── Hero ─────────────────────────────────────────────────────────────────────
+.hero-section {
+  padding: 3rem 0 2rem;
+  text-align: center;
+
+  h1 {
+    font-weight: 700;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.75rem;
+  }
+
+  p.lead {
+    font-size: 1.05rem;
+    max-width: 560px;
+    margin: 0 auto;
+    opacity: 0.75;
+  }
+}
+
+// ── Upload card ───────────────────────────────────────────────────────────────
+.upload-card {
+  border: none;
+  box-shadow: var(--card-shadow);
+  border-radius: 0.75rem;
+
+  .card-body {
+    padding: 2rem;
+
+    @media (min-width: 768px) {
+      padding: 2.5rem;
+    }
+  }
+}
+
+// ── Drop zone ─────────────────────────────────────────────────────────────────
+.drop-zone {
+  border: 2px dashed var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  position: relative;
+
+  input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover,
+  &.drag-over {
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+  }
+
+  &.has-file {
+    border-color: var(--bs-success);
+    background-color: rgba(var(--bs-success-rgb), 0.05);
+  }
+
+  .drop-zone-icon {
+    font-size: 2.5rem;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+
+  .drop-zone-text {
+    font-size: 0.9rem;
+    color: var(--bs-secondary-color);
+  }
+
+  .drop-zone-filename {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--bs-success);
+  }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.loading-state {
+  padding: 4rem 1rem;
+  text-align: center;
+
+  .loading-spinner-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+
+    .spinner-border {
+      width: 80px;
+      height: 80px;
+      border-width: 4px;
+    }
+
+    .spinner-icon {
+      position: absolute;
+      font-size: 1.8rem;
+    }
+  }
+
+  .loading-message {
+    font-size: 1.05rem;
+    font-weight: 500;
+    min-height: 1.6em;
+  }
+
+  .loading-sub {
+    font-size: 0.85rem;
+    opacity: 0.55;
+    margin-top: 0.5rem;
+  }
+}
+
+// ── Results header ────────────────────────────────────────────────────────────
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+// ── Job card ──────────────────────────────────────────────────────────────────
+.job-card {
+  border: 1px solid var(--bs-border-color);
+  border-left-width: 5px;
+  border-radius: 0.75rem;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.2s, transform 0.2s;
+  height: 100%;
+
+  &:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  &.score-excellent { border-left-color: var(--score-excellent); }
+  &.score-good      { border-left-color: var(--score-good); }
+  &.score-partial   { border-left-color: var(--score-partial); }
+
+  .card-body {
+    padding: 1.25rem;
+
+    @media (min-width: 992px) {
+      padding: 1.5rem;
+    }
+  }
+}
+
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+
+  &.score-excellent {
+    background-color: rgba(45, 198, 83, 0.15);
+    color: #1e8c3a;
+  }
+  &.score-good {
+    background-color: rgba(244, 169, 66, 0.15);
+    color: #a06800;
+  }
+  &.score-partial {
+    background-color: rgba(230, 57, 70, 0.15);
+    color: #b02030;
+  }
+}
+
+[data-bs-theme="dark"] {
+  .score-badge {
+    &.score-excellent { color: #5de07a; }
+    &.score-good      { color: #f7be6a; }
+    &.score-partial   { color: #f06472; }
+  }
+}
+
+.job-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 0.2rem;
+}
+
+.job-company {
+  font-size: 0.88rem;
+  font-weight: 500;
+  opacity: 0.65;
+}
+
+.job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.6rem 0;
+
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.3em 0.65em;
+  }
+}
+
+.skills-section {
+  margin-top: 0.75rem;
+
+  .skills-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.5;
+    margin-bottom: 0.35rem;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .skill-tag {
+    font-size: 0.72rem;
+    padding: 0.25em 0.6em;
+    border-radius: 0.3rem;
+    font-weight: 500;
+
+    &.matched {
+      background-color: rgba(45, 198, 83, 0.12);
+      color: #1a7a32;
+      border: 1px solid rgba(45, 198, 83, 0.3);
+    }
+
+    &.missing {
+      background-color: rgba(230, 57, 70, 0.1);
+      color: #a01825;
+      border: 1px solid rgba(230, 57, 70, 0.3);
+    }
+  }
+}
+
+[data-bs-theme="dark"] {
+  .skill-tag {
+    &.matched {
+      background-color: rgba(45, 198, 83, 0.15);
+      color: #5de07a;
+      border-color: rgba(45, 198, 83, 0.25);
+    }
+
+    &.missing {
+      background-color: rgba(230, 57, 70, 0.15);
+      color: #f06472;
+      border-color: rgba(230, 57, 70, 0.25);
+    }
+  }
+}
+
+.job-summary {
+  font-size: 0.82rem;
+  opacity: 0.65;
+  font-style: italic;
+  margin-top: 0.75rem;
+  line-height: 1.5;
+  border-top: 1px solid var(--bs-border-color);
+  padding-top: 0.75rem;
+}
+
+.job-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--bs-border-color);
+  gap: 0.5rem;
+
+  .job-date {
+    font-size: 0.78rem;
+    opacity: 0.45;
+  }
+}
+
+// ── Empty / error states ──────────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  opacity: 0.55;
+
+  i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.site-footer {
+  padding: 1.5rem 0;
+  font-size: 0.8rem;
+  opacity: 0.45;
+  text-align: center;
+  margin-top: auto;
+}
