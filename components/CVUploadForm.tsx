@@ -9,16 +9,14 @@ interface Props {
 }
 
 const LOCATIONS = ['Remote', 'София', 'Пловдив', 'Варна', 'Бургас', 'Русе', 'Стара Загора'];
-const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Contract/Freelance'];
 const LANGUAGES = ['И двата', 'Български', 'English'];
-const DAYS = [1, 2, 3, 5, 7];
+const DAYS = [1, 5, 10];
 
 export default function CVUploadForm({ onSubmit, loading }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [form, setForm] = useState<FormData>({
     location: 'Remote',
-    employment_type: 'Full-time',
     language: 'И двата',
     days_back: 5,
     email: '',
@@ -97,17 +95,6 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                 onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
               >
                 {LOCATIONS.map(l => <option key={l}>{l}</option>)}
-              </select>
-            </div>
-
-            <div className="col-12 col-sm-6 col-lg-4">
-              <label className="form-label fw-semibold small">Тип заетост</label>
-              <select
-                className="form-select form-select-sm"
-                value={form.employment_type}
-                onChange={e => setForm(f => ({ ...f, employment_type: e.target.value }))}
-              >
-                {EMPLOYMENT_TYPES.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
 

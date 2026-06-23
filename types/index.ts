@@ -24,7 +24,6 @@ export interface AnalyzeResponse {
 
 export interface FormData {
   location: string;
-  employment_type: string;
   language: string;
   days_back: number;
   email: string;

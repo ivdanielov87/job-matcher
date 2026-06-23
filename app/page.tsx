@@ -21,7 +21,6 @@ export default function Home() {
     const fd = new FormData();
     fd.append('data', file);
     fd.append('location', form.location);
-    fd.append('employment_type', form.employment_type);
     fd.append('language', form.language);
     fd.append('days_back', String(form.days_back));
     if (form.email) fd.append('email', form.email);

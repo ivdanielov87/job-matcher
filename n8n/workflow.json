@@ -33,12 +33,6 @@
               "type": "string"
             },
             {
-              "id": "n-emp",
-              "name": "employment_type",
-              "value": "={{ $json.body?.employment_type ?? $json.employment_type ?? \"Full-time\" }}",
-              "type": "string"
-            },
-            {
               "id": "n-lang",
               "name": "language",
               "value": "={{ $json.body?.language ?? $json.language ?? \"И двата\" }}",
@@ -53,7 +47,7 @@
             {
               "id": "n-days",
               "name": "days_back",
-              "value": "={{ Math.min(Number($json.body?.days_back ?? $json.days_back ?? 5), 7) }}",
+              "value": "={{ Math.min(Number($json.body?.days_back ?? $json.days_back ?? 5), 10) }}",
               "type": "number"
             }
           ]
@@ -195,7 +189,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cvProfile = $input.first().json.output;\nconst prefs = $('Normalize Input').first().json;\n\nconst urlMap = {\n  'Backend':  'https://dev.bg/company/jobs/back-end-development/',\n  'Frontend': 'https://dev.bg/company/jobs/front-end-development/',\n  'Fullstack':'https://dev.bg/company/jobs/full-stack-development/',\n  'QA':       'https://dev.bg/company/jobs/quality-assurance/',\n  'Mobile':   'https://dev.bg/company/jobs/mobile/',\n  'DevOps':   'https://dev.bg/company/jobs/infrastructure/',\n  'Data':     'https://dev.bg/company/jobs/data-science-and-analytics/'\n};\n\nconst locationMap = {\n  'Remote':       'remote',\n  'София':       'sofiya',\n  'Пловдив':      'plovdiv',\n  'Варна':        'varna',\n  'Бургас':       'burgas',\n  'Русе':         'ruse',\n  'Стара Загора': 'stara-zagora'\n};\n\nconst jobType = cvProfile?.job_type || 'Backend';\nconst baseUrl = urlMap[jobType] || 'https://dev.bg/company/jobs/';\nconst locationSlug = locationMap[prefs.location];\nconst scrapeUrl = locationSlug\n  ? baseUrl + '?_job_location=' + encodeURIComponent(locationSlug)\n  : baseUrl;\n\nreturn [{\n  json: {\n    cv_profile: {\n      skills:               cvProfile?.skills || [],\n      programming_languages: cvProfile?.programming_languages || [],\n      frameworks:            cvProfile?.frameworks || [],\n      tools:                 cvProfile?.tools || [],\n      spoken_languages:      cvProfile?.spoken_languages || [],\n      experience_level:      cvProfile?.experience_level || 'Mid',\n      job_type:              jobType,\n      years_of_experience:   cvProfile?.years_of_experience || 0,\n      job_titles:            cvProfile?.job_titles || []\n    },\n    scrape_url:      scrapeUrl,\n    location:        prefs.location,\n    employment_type: prefs.employment_type,\n    language:        prefs.language,\n    user_email:      prefs.user_email,\n    days_back:       prefs.days_back || 5\n  }\n}];"
+        "jsCode": "const cvProfile = $input.first().json.output;\nconst prefs = $('Normalize Input').first().json;\n\nconst urlMap = {\n  'Backend':  'https://dev.bg/company/jobs/back-end-development/',\n  'Frontend': 'https://dev.bg/company/jobs/front-end-development/',\n  'Fullstack':'https://dev.bg/company/jobs/full-stack-development/',\n  'QA':       'https://dev.bg/company/jobs/quality-assurance/',\n  'Mobile':   'https://dev.bg/company/jobs/mobile/',\n  'DevOps':   'https://dev.bg/company/jobs/infrastructure/',\n  'Data':     'https://dev.bg/company/jobs/data-science-and-analytics/'\n};\n\nconst locationMap = {\n  'Remote':       'remote',\n  'София':       'sofiya',\n  'Пловдив':      'plovdiv',\n  'Варна':        'varna',\n  'Бургас':       'burgas',\n  'Русе':         'ruse',\n  'Стара Загора': 'stara-zagora'\n};\n\nconst jobType = cvProfile?.job_type || 'Backend';\nconst baseUrl = urlMap[jobType] || 'https://dev.bg/company/jobs/';\nconst locationSlug = locationMap[prefs.location];\nconst scrapeUrl = locationSlug\n  ? baseUrl + '?_job_location=' + encodeURIComponent(locationSlug)\n  : baseUrl;\n\nreturn [{\n  json: {\n    cv_profile: {\n      skills:               cvProfile?.skills || [],\n      programming_languages: cvProfile?.programming_languages || [],\n      frameworks:            cvProfile?.frameworks || [],\n      tools:                 cvProfile?.tools || [],\n      spoken_languages:      cvProfile?.spoken_languages || [],\n      experience_level:      cvProfile?.experience_level || 'Mid',\n      job_type:              jobType,\n      years_of_experience:   cvProfile?.years_of_experience || 0,\n      job_titles:            cvProfile?.job_titles || []\n    },\n    scrape_url:      scrapeUrl,\n    location:        prefs.location,\n    language:        prefs.language,\n    user_email:      prefs.user_email,\n    days_back:       prefs.days_back || 5\n  }\n}];"
       },
       "id": "9f14d416-5abc-40e5-9ad8-167f91a13947",
       "name": "Build dev.bg Target URL",
