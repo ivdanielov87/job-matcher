@@ -247,7 +247,7 @@
       "typeVersion": 2,
       "position": [1680, 112],
       "parameters": {
-        "jsCode": "const item = $input.first();\nconst jobs = (item.json.output?.jobs || []);\n\n// Get job-specific links from Firecrawl (jobads URLs are individual job pages)\nconst allLinks = $('Scrape dev.bg via Firecrawl').first().json.data?.links || [];\nconst jobLinks = allLinks.filter(l =>\n  typeof l === 'string' && l.includes('dev.bg/company/jobads/')\n);\n\n// Assign URL by page order — links appear in the same order as job cards\nconst jobsWithUrls = jobs.map((job, i) => ({\n  ...job,\n  url: jobLinks[i] || ''\n}));\n\nreturn [{ json: { output: { jobs: jobsWithUrls } } }];"
+        "jsCode": "const item = $input.first();\nconst jobs = (item.json.output?.jobs || []);\nconst daysBack = $('Build dev.bg Target URL').first().json.days_back || 5;\nconst cutoff = new Date();\ncutoff.setDate(cutoff.getDate() - daysBack);\n\nconst allLinks = $('Scrape dev.bg via Firecrawl').first().json.data?.links || [];\nconst jobLinks = allLinks.filter(l =>\n  typeof l === 'string' && l.includes('dev.bg/company/jobads/')\n);\n\n// Assign URL by position and filter by date in one pass\nconst jobsWithUrls = jobs\n  .map((job, i) => ({ ...job, url: jobLinks[i] || '' }))\n  .filter(job => {\n    if (!job.date_posted) return true;\n    return new Date(job.date_posted) >= cutoff;\n  });\n\nreturn [{ json: { output: { jobs: jobsWithUrls } } }];"
       }
     },
     {
@@ -299,33 +299,6 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [1808, 112]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "date-cond",
-              "leftValue": "={{ $json.date_posted }}",
-              "operator": { "type": "dateTime", "operation": "after" },
-              "rightValue": "={{ $now.minus({ days: $('Build dev.bg Target URL').first().json.days_back }).toISO() }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "490f8e72-5d96-452a-a886-3cc65b8e442b",
-      "name": "Filter: By Date Range",
-      "type": "n8n-nodes-base.filter",
-      "typeVersion": 2.3,
-      "position": [1984, 112]
     },
     {
       "parameters": { "maxItems": 10 },
@@ -542,8 +515,7 @@
         [{ "node": "Return Empty Results", "type": "main", "index": 0 }]
       ]
     },
-    "Split Jobs Into Items": { "main": [[{ "node": "Filter: By Date Range", "type": "main", "index": 0 }]] },
-    "Filter: By Date Range": { "main": [[{ "node": "Limit: Max 10 Jobs", "type": "main", "index": 0 }]] },
+    "Split Jobs Into Items": { "main": [[{ "node": "Limit: Max 10 Jobs", "type": "main", "index": 0 }]] },
     "Limit: Max 10 Jobs": { "main": [[{ "node": "Compose Scoring Input", "type": "main", "index": 0 }]] },
     "Compose Scoring Input": { "main": [[{ "node": "Score Job vs CV", "type": "main", "index": 0 }]] },
     "Gemini Flash (Scoring)": { "ai_languageModel": [[{ "node": "Score Job vs CV", "type": "ai_languageModel", "index": 0 }]] },
