@@ -18,6 +18,7 @@ export interface AnalyzeResponse {
   jobs: Job[];
   total: number;
   processed_at: string;
+  processing_time_ms?: number;
   message?: string;
   error?: string;
 }

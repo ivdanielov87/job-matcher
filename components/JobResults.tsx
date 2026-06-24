@@ -6,25 +6,38 @@ interface Props {
   onReset: () => void;
 }
 
+function formatTime(ms: number): string {
+  const s = Math.round(ms / 1000);
+  return s < 60 ? `${s} сек` : `${Math.floor(s / 60)} мин ${s % 60} сек`;
+}
+
 export default function JobResults({ data, onReset }: Props) {
-  const { jobs, total, message } = data;
+  const { jobs, total, message, processing_time_ms } = data;
 
   return (
     <div>
       <div className="results-header">
-        <h2>
-          {total > 0 ? (
-            <>
-              <i className="bi bi-check-circle-fill text-success me-2" />
-              Намерени {total} подходящи обяви
-            </>
-          ) : (
-            <>
-              <i className="bi bi-info-circle text-warning me-2" />
-              Няма намерени обяви
-            </>
+        <div>
+          <h2 className="mb-0">
+            {total > 0 ? (
+              <>
+                <i className="bi bi-check-circle-fill text-success me-2" />
+                Намерени {total} подходящи обяви
+              </>
+            ) : (
+              <>
+                <i className="bi bi-info-circle text-warning me-2" />
+                Няма намерени обяви
+              </>
+            )}
+          </h2>
+          {processing_time_ms != null && (
+            <p className="text-muted mb-0" style={{ fontSize: '0.82rem' }}>
+              <i className="bi bi-clock me-1" />
+              Обработено за {formatTime(processing_time_ms)}
+            </p>
           )}
-        </h2>
+        </div>
         <button className="btn btn-outline-secondary btn-sm" onClick={onReset}>
           <i className="bi bi-arrow-left me-1" />
           Ново търсене

@@ -24,6 +24,10 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
   const [error, setError] = useState('');
 
   const handleFile = (f: File) => {
+    if (f.size > 5 * 1024 * 1024) {
+      setError('Файлът е твърде голям. Максимален размер: 5 MB.');
+      return;
+    }
     if (f.type !== 'application/pdf') {
       setError('Моля изберете PDF файл.');
       return;
@@ -80,7 +84,7 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                 <div className="drop-zone-text">
                   <strong>Провлачи PDF тук</strong> или кликни за избор
                 </div>
-                <div className="drop-zone-text mt-1 small">Само PDF файлове</div>
+                <div className="drop-zone-text mt-1 small">Само PDF, макс. 5 MB</div>
               </>
             )}
           </div>

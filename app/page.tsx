@@ -51,7 +51,7 @@ export default function Home() {
 
   return (
     <>
-      <Header />
+      <Header onReset={handleReset} />
 
       <main className="container py-4 flex-grow-1">
         {state === 'form' && (
@@ -62,7 +62,7 @@ export default function Home() {
                 <span style={{ color: 'var(--bs-primary)' }}>съобразена с твоето CV</span>
               </h1>
               <p className="lead">
-                Качи CV-то си и ние ще намерим най-подходящите обяви от dev.bg,
+                Качи CV-то си и ние ще намерим най-подходящите обяви от dev.bg и jobs.bg,
                 оценени с AI по умения и опит.
               </p>
             </div>

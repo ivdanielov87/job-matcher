@@ -27,24 +27,27 @@ export default function JobCard({ job }: { job: Job }) {
   return (
     <div className={`job-card card ${cls}`}>
       <div className="card-body">
-        {/* Header row */}
-        <div className="d-flex align-items-start gap-3 mb-1">
-          <div className="flex-grow-1 min-width-0">
-            <div className="job-title text-truncate" title={job.title}>
-              {job.title}
+        {/* Header — separated from the rest */}
+        <div className="job-card-header">
+          <div className="d-flex align-items-start gap-3">
+            <div className="flex-grow-1 min-width-0">
+              <div className="job-title text-truncate" title={job.title}>
+                {job.title}
+              </div>
+              <div className="job-company">
+                <i className="bi bi-building me-1" />
+                {job.company}
+              </div>
             </div>
-            <div className="job-company">{job.company}</div>
+            <div className={`score-badge ${cls} flex-shrink-0`}>
+              {job.score}%
+            </div>
           </div>
-          <div className={`score-badge ${cls} flex-shrink-0`}>
-            {job.score}%
+          <div className="mt-1">
+            <small className={`fw-semibold ${cls === 'score-excellent' ? 'text-success' : cls === 'score-good' ? 'text-warning' : 'text-danger'}`}>
+              {scoreLabel(job.score)} съвпадение
+            </small>
           </div>
-        </div>
-
-        {/* Score label */}
-        <div className="mb-1">
-          <small className={`fw-semibold ${cls === 'score-excellent' ? 'text-success' : cls === 'score-good' ? 'text-warning' : 'text-danger'}`}>
-            {scoreLabel(job.score)} съвпадение
-          </small>
         </div>
 
         {/* Meta badges */}

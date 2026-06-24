@@ -14,17 +14,26 @@ const MESSAGES = [
 export default function LoadingState() {
   const [msgIndex, setMsgIndex] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const msgInterval = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
         setMsgIndex(i => (i + 1) % MESSAGES.length);
         setVisible(true);
       }, 400);
     }, 3500);
-    return () => clearInterval(interval);
+    return () => clearInterval(msgInterval);
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatElapsed = (s: number) =>
+    s < 60 ? `${s} сек` : `${Math.floor(s / 60)} мин ${s % 60} сек`;
 
   return (
     <div className="loading-state">
@@ -44,7 +53,12 @@ export default function LoadingState() {
         Това може да отнеме 30–90 секунди
       </p>
 
-      <div className="mt-3">
+      <p className="text-muted" style={{ fontSize: '0.82rem' }}>
+        <i className="bi bi-clock me-1" />
+        {formatElapsed(elapsed)}
+      </p>
+
+      <div className="mt-2">
         <div
           className="progress mx-auto"
           style={{ height: '3px', maxWidth: '280px', borderRadius: '2px' }}

@@ -1,10 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function Header() {
+interface Props {
+  onReset?: () => void;
+}
+
+export default function Header({ onReset }: Props) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -28,9 +34,37 @@ export default function Header() {
         </span>
 
         <div className="ms-auto d-flex align-items-center gap-2">
-          <span className="d-none d-sm-inline text-muted" style={{ fontSize: '0.82rem' }}>
-            Powered by Gemini Flash + dev.bg
-          </span>
+          <button
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => onReset ? onReset() : router.push('/')}
+            title="Начало"
+          >
+            <i className="bi bi-house-fill me-1" />
+            <span className="d-none d-sm-inline">Начало</span>
+          </button>
+
+          <a
+            href="https://dev.bg"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-sm btn-outline-secondary"
+            title="Отвори dev.bg"
+          >
+            Към dev.bg
+            <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
+          </a>
+
+          <a
+            href="https://www.jobs.bg"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-sm btn-outline-secondary"
+            title="Отвори jobs.bg"
+          >
+            Към jobs.bg
+            <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
+          </a>
+
           {mounted && (
             <button
               className="btn btn-sm btn-outline-secondary"
