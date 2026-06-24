@@ -1,3 +1,5 @@
+export type JobSource = 'dev.bg' | 'jobs.bg';
+
 export interface Job {
   title: string;
   company: string;
@@ -11,6 +13,7 @@ export interface Job {
   missing_skills: string[];
   experience_match: boolean;
   summary: string;
+  source?: JobSource;
 }
 
 export interface AnalyzeResponse {

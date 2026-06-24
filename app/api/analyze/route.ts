@@ -2,7 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const N8N_WEBHOOK = process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook/cv-job-matcher';
 
+let isRunning = false;
+
 export async function POST(req: NextRequest) {
+  if (isRunning) {
+    return NextResponse.json(
+      { success: false, error: 'BUSY', message: 'В момента се обработва друга заявка. Опитайте след около минута.' },
+      { status: 429 }
+    );
+  }
+
+  isRunning = true;
   try {
     const formData = await req.formData();
 
@@ -37,5 +47,7 @@ export async function POST(req: NextRequest) {
       { success: false, error: 'SERVER_ERROR', message: 'Вътрешна грешка. Опитайте отново.' },
       { status: 500 }
     );
+  } finally {
+    isRunning = false;
   }
 }

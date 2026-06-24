@@ -23,10 +23,12 @@ function formatDate(dateStr: string): string {
 
 export default function JobCard({ job }: { job: Job }) {
   const cls = scoreClass(job.score);
+  const sourceClass = job.source ? `source-${job.source.replace('.', '-')}` : '';
 
   return (
     <div className={`job-card card ${cls}`}>
       <div className="card-body">
+
         {/* Header — separated from the rest */}
         <div className="job-card-header">
           <div className="d-flex align-items-start gap-3">
@@ -39,14 +41,31 @@ export default function JobCard({ job }: { job: Job }) {
                 {job.company}
               </div>
             </div>
-            <div className={`score-badge ${cls} flex-shrink-0`}>
-              {job.score}%
+            <div className="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+              <div
+                className={`score-badge ${cls}`}
+                style={{ ['--score' as string]: job.score }}
+              >
+                <span className="score-badge-inner">{job.score}%</span>
+              </div>
+              {job.source && (
+                <span className={`source-badge ${sourceClass}`}>
+                  <i className="bi bi-globe2" />
+                  {job.source}
+                </span>
+              )}
             </div>
           </div>
-          <div className="mt-1">
+          <div className="mt-1 d-flex align-items-center gap-2">
             <small className={`fw-semibold ${cls === 'score-excellent' ? 'text-success' : cls === 'score-good' ? 'text-warning' : 'text-danger'}`}>
               {scoreLabel(job.score)} съвпадение
             </small>
+            {job.experience_match && (
+              <span className="experience-match-badge">
+                <i className="bi bi-patch-check-fill me-1" />
+                Опит ✓
+              </span>
+            )}
           </div>
         </div>
 

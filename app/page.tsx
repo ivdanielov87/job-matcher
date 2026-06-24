@@ -67,15 +67,14 @@ export default function Home() {
               </p>
             </div>
 
-            {apiError && (
-              <div className="alert alert-danger mb-3" role="alert">
-                <i className="bi bi-exclamation-circle me-2" />
-                {apiError}
-              </div>
-            )}
-
             <div className="row justify-content-center">
               <div className="col-12 col-lg-8 col-xl-7">
+                {apiError && (
+                  <div className="alert alert-danger mb-3" role="alert">
+                    <i className="bi bi-exclamation-circle me-2" />
+                    {apiError}
+                  </div>
+                )}
                 <CVUploadForm onSubmit={handleSubmit} loading={false} />
               </div>
             </div>

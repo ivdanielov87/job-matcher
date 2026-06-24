@@ -193,12 +193,13 @@ html, body {
   border-left-width: 5px;
   border-radius: 0.75rem;
   box-shadow: var(--card-shadow);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
   height: 100%;
 
   &:hover {
     box-shadow: var(--card-shadow-hover);
     transform: translateY(-2px);
+    border-color: rgba(var(--bs-primary-rgb), 0.35);
   }
 
   &.score-excellent { border-left-color: var(--score-excellent); }
@@ -215,28 +216,33 @@ html, body {
 }
 
 .score-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  position: relative;
+  width: 3.25rem;
+  height: 3.25rem;
   border-radius: 50%;
-  font-weight: 700;
-  font-size: 0.85rem;
-  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  --ring-track: var(--bs-border-color);
+  background: conic-gradient(
+    var(--ring-color) calc(var(--score, 0) * 1%),
+    var(--ring-track) 0
+  );
 
-  &.score-excellent {
-    background-color: rgba(45, 198, 83, 0.15);
-    color: #1e8c3a;
+  .score-badge-inner {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: var(--bs-body-bg);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.78rem;
+    line-height: 1;
   }
-  &.score-good {
-    background-color: rgba(244, 169, 66, 0.15);
-    color: #a06800;
-  }
-  &.score-partial {
-    background-color: rgba(230, 57, 70, 0.15);
-    color: #b02030;
-  }
+
+  &.score-excellent { --ring-color: var(--score-excellent); color: #1e8c3a; }
+  &.score-good      { --ring-color: var(--score-good);      color: #a06800; }
+  &.score-partial   { --ring-color: var(--score-partial);   color: #b02030; }
 }
 
 [data-bs-theme="dark"] {
@@ -247,6 +253,45 @@ html, body {
   }
 }
 
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.2em 0.55em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  i { font-size: 0.75em; }
+
+  &.source-dev-bg {
+    color: #0a7d5a;
+    background: rgba(13, 148, 107, 0.12);
+    border-color: rgba(13, 148, 107, 0.3);
+  }
+  &.source-jobs-bg {
+    color: #1d5fc4;
+    background: rgba(29, 95, 196, 0.12);
+    border-color: rgba(29, 95, 196, 0.3);
+  }
+}
+
+[data-bs-theme="dark"] .source-badge {
+  &.source-dev-bg  { color: #4fd1a8; }
+  &.source-jobs-bg { color: #6fa3f0; }
+}
+
+.experience-match-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--score-excellent);
+  opacity: 0.85;
+}
+
 .job-card-header {
   padding-bottom: 0.85rem;
   margin-bottom: 0.85rem;
@@ -254,18 +299,21 @@ html, body {
 }
 
 .job-title {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.35;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
   margin-bottom: 0.2rem;
   white-space: pre-wrap;
 }
 
 .job-company {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 500;
   opacity: 0.8;
   margin-top: 0.15rem;
+
+  i { color: var(--bs-primary); opacity: 0.7; }
 }
 
 .job-meta {
