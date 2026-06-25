@@ -39,8 +39,8 @@ export default function Header({ onReset }: Props) {
             onClick={() => onReset ? onReset() : router.push('/')}
             title="Начало"
           >
-            <i className="bi bi-house-fill me-1" />
-            <span className="d-none d-sm-inline">Начало</span>
+            <i className="bi bi-house-fill" />
+            <span className="d-none d-sm-inline ms-1">Начало</span>
           </button>
 
           <a
@@ -48,10 +48,13 @@ export default function Header({ onReset }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-sm btn-outline-secondary"
-            title="Отвори dev.bg"
+            title="Към dev.bg"
           >
-            Към dev.bg
-            <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
+            <i className="bi bi-code-slash d-sm-none" />
+            <span className="d-none d-sm-inline">
+              Към dev.bg
+              <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
+            </span>
           </a>
 
           <a
@@ -59,10 +62,13 @@ export default function Header({ onReset }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-sm btn-outline-secondary"
-            title="Отвори jobs.bg"
+            title="Към jobs.bg"
           >
-            Към jobs.bg
-            <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
+            <i className="bi bi-briefcase d-sm-none" />
+            <span className="d-none d-sm-inline">
+              Към jobs.bg
+              <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
+            </span>
           </a>
 
           {mounted && (

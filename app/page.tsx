@@ -59,12 +59,27 @@ export default function Home() {
             <div className="hero-section">
               <h1>
                 Намери работа,{' '}
-                <span style={{ color: 'var(--bs-primary)' }}>съобразена с твоето CV</span>
+                <span className="hero-gradient-text">съобразена с твоето CV</span>
               </h1>
               <p className="lead">
-                Качи CV-то си и ние ще намерим най-подходящите обяви от dev.bg и jobs.bg,
-                оценени с AI по умения и опит.
+                Качи CV-то си и AI ще намери най-подходящите обяви от dev.bg, оценени по умения и опит.
               </p>
+              <div className="how-it-works mt-4 mb-2">
+                <div className="how-step">
+                  <div className="how-step-icon"><i className="bi bi-file-earmark-pdf-fill" /></div>
+                  <div className="how-step-label">Качи CV</div>
+                </div>
+                <div className="how-step-arrow"><i className="bi bi-chevron-right" /></div>
+                <div className="how-step">
+                  <div className="how-step-icon"><i className="bi bi-cpu-fill" /></div>
+                  <div className="how-step-label">AI анализ</div>
+                </div>
+                <div className="how-step-arrow"><i className="bi bi-chevron-right" /></div>
+                <div className="how-step">
+                  <div className="how-step-icon"><i className="bi bi-trophy-fill" /></div>
+                  <div className="how-step-label">Топ резултати</div>
+                </div>
+              </div>
             </div>
 
             <div className="row justify-content-center">

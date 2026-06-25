@@ -62,9 +62,88 @@ html, body {
 
   p.lead {
     font-size: 1.05rem;
-    max-width: 560px;
+    max-width: 520px;
     margin: 0 auto;
     opacity: 0.75;
+  }
+}
+
+.hero-gradient-text {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.how-it-works {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  .how-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.875rem 1.25rem;
+    background: rgba(var(--bs-primary-rgb), 0.06);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 0.75rem;
+    min-width: 88px;
+    transition: background 0.2s;
+
+    .how-step-icon {
+      font-size: 1.4rem;
+      color: var(--bs-primary);
+    }
+
+    .how-step-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+  }
+
+  .how-step-arrow {
+    color: var(--bs-secondary-color);
+    opacity: 0.35;
+    font-size: 0.85rem;
+  }
+}
+
+// ── Preferences section ───────────────────────────────────────────────────────
+.prefs-section {
+  border-top: 1px solid var(--bs-border-color);
+  padding-top: 1.25rem;
+}
+
+.prefs-section-header {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.38;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.pref-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+
+  i { opacity: 0.6; }
+
+  .pref-optional {
+    font-weight: 400;
+    font-size: 0.72rem;
+    opacity: 0.55;
   }
 }
 
@@ -80,6 +159,38 @@ html, body {
     @media (min-width: 768px) {
       padding: 2.5rem;
     }
+  }
+}
+
+// ── Submit button ─────────────────────────────────────────────────────────────
+.submit-btn {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #6d28d9 100%);
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.85rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.2);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover:not(:disabled) {
+    color: #fff;
+    background: linear-gradient(135deg, #3451d1 0%, #5b21b6 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(67, 97, 238, 0.3);
+    border: none;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(67, 97, 238, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
   }
 }
 

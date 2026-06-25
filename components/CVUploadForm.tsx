@@ -10,7 +10,7 @@ interface Props {
 
 const LOCATIONS = ['Remote', 'София', 'Пловдив', 'Варна', 'Бургас', 'Русе', 'Стара Загора'];
 const LANGUAGES = ['И двата', 'Български', 'English'];
-const DAYS = [1, 5, 10];
+const DAYS = [7, 14];
 
 export default function CVUploadForm({ onSubmit, loading }: Props) {
   const [file, setFile] = useState<File | null>(null);
@@ -18,7 +18,7 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
   const [form, setForm] = useState<FormData>({
     location: 'Remote',
     language: 'И двата',
-    days_back: 5,
+    days_back: 7,
     email: '',
   });
   const [error, setError] = useState('');
@@ -89,65 +89,90 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
             )}
           </div>
 
-          {/* Preferences row */}
-          <div className="row g-3 mt-2">
-            <div className="col-12 col-sm-6 col-lg-4">
-              <label className="form-label fw-semibold small">Локация</label>
-              <select
-                className="form-select form-select-sm"
-                value={form.location}
-                onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-              >
-                {LOCATIONS.map(l => <option key={l}>{l}</option>)}
-              </select>
+          {/* Preferences section */}
+          <div className="prefs-section mt-4">
+            <div className="prefs-section-header">
+              <i className="bi bi-sliders me-2" />
+              Предпочитания
             </div>
 
-            <div className="col-12 col-sm-6 col-lg-4">
-              <label className="form-label fw-semibold small">Език на обявите</label>
-              <select
-                className="form-select form-select-sm"
-                value={form.language}
-                onChange={e => setForm(f => ({ ...f, language: e.target.value }))}
-              >
-                {LANGUAGES.map(l => <option key={l}>{l}</option>)}
-              </select>
-            </div>
-
-            <div className="col-12 col-sm-6">
-              <label className="form-label fw-semibold small">
-                Обяви от последните <strong>{form.days_back}</strong> {form.days_back === 1 ? 'ден' : 'дни'}
-              </label>
-              <div className="days-selector d-flex gap-1 flex-wrap">
-                {DAYS.map(d => (
-                  <Fragment key={d}>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="days_back"
-                      id={`days-${d}`}
-                      value={d}
-                      checked={form.days_back === d}
-                      onChange={() => setForm(f => ({ ...f, days_back: d }))}
-                    />
-                    <label className="btn btn-outline-primary btn-sm" htmlFor={`days-${d}`}>
-                      {d} {d === 1 ? 'ден' : 'дни'}
-                    </label>
-                  </Fragment>
-                ))}
+            <div className="row g-3">
+              {/* Location */}
+              <div className="col-12 col-sm-6">
+                <div className="pref-label">
+                  <i className="bi bi-geo-alt-fill" />
+                  Локация
+                </div>
+                <select
+                  className="form-select form-select-sm"
+                  value={form.location}
+                  onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                >
+                  {LOCATIONS.map(l => <option key={l}>{l}</option>)}
+                </select>
               </div>
-            </div>
 
-            <div className="col-12 col-sm-6">
-              <label className="form-label fw-semibold small">
-                Email <span className="text-muted fw-normal">(по желание)</span>
-              </label>
-              <input
-                type="email"
-                className="form-control form-control-sm"
-                placeholder="ivan@example.com"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              />
+              {/* Language */}
+              <div className="col-12 col-sm-6">
+                <div className="pref-label">
+                  <i className="bi bi-translate" />
+                  Език на обявите
+                </div>
+                <select
+                  className="form-select form-select-sm"
+                  value={form.language}
+                  onChange={e => setForm(f => ({ ...f, language: e.target.value }))}
+                >
+                  {LANGUAGES.map(l => <option key={l}>{l}</option>)}
+                </select>
+              </div>
+
+              {/* Days */}
+              <div className="col-12 col-sm-6">
+                <div className="pref-label">
+                  <i className="bi bi-calendar3" />
+                  {form.days_back === 7 ? 'Обяви от последната седмица' : 'Обяви от последните 2 седмици'}
+                </div>
+                <div className="d-flex gap-1 flex-wrap">
+                  {DAYS.map(d => (
+                    <Fragment key={d}>
+                      <input
+                        type="radio"
+                        className="btn-check"
+                        name="days_back"
+                        id={`days-${d}`}
+                        value={d}
+                        checked={form.days_back === d}
+                        onChange={() => setForm(f => ({ ...f, days_back: d }))}
+                      />
+                      <label className="btn btn-outline-primary btn-sm" htmlFor={`days-${d}`}>
+                        {d === 7 ? '1 седмица' : '2 седмици'}
+                      </label>
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="col-12 col-sm-6">
+                <div className="pref-label">
+                  <i className="bi bi-envelope" />
+                  Email
+                  <span className="pref-optional ms-1">(по желание)</span>
+                </div>
+                <div className="input-group input-group-sm">
+                  <span className="input-group-text">
+                    <i className="bi bi-envelope" />
+                  </span>
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="ivan@example.com"
+                    value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -163,7 +188,7 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
           <div className="mt-4 d-grid">
             <button
               type="submit"
-              className="btn btn-primary btn-lg"
+              className="btn submit-btn w-100"
               disabled={loading}
             >
               {loading ? (
