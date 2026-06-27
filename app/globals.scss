@@ -77,39 +77,58 @@ html, body {
 
 .how-it-works {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  gap: 0;
+  max-width: 26rem;
+  margin: 0 auto;
 
   .how-step {
+    position: relative;
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.875rem 1.25rem;
-    background: rgba(var(--bs-primary-rgb), 0.06);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
-    border-radius: 0.75rem;
-    min-width: 88px;
-    transition: background 0.2s;
+    gap: 0.5rem;
 
-    .how-step-icon {
-      font-size: 1.4rem;
-      color: var(--bs-primary);
+    // thin line connecting this step's number to the previous one
+    &::before {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      right: 50%;
+      width: 100%;
+      height: 2px;
+      background: rgba(var(--bs-primary-rgb), 0.2);
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+
+    &:first-child::before {
+      display: none;
+    }
+
+    .how-step-num {
+      position: relative;
+      z-index: 1;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--bs-primary);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1;
     }
 
     .how-step-label {
       font-size: 0.75rem;
       font-weight: 600;
       letter-spacing: 0.01em;
+      text-align: center;
+      color: var(--bs-secondary-color);
     }
-  }
-
-  .how-step-arrow {
-    color: var(--bs-secondary-color);
-    opacity: 0.35;
-    font-size: 0.85rem;
   }
 }
 
@@ -318,6 +337,9 @@ html, body {
   &.score-partial   { border-left-color: var(--score-partial); }
 
   .card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     padding: 1.25rem;
 
     @media (min-width: 992px) {
@@ -397,10 +419,41 @@ html, body {
 }
 
 .experience-match-badge {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--score-excellent);
-  opacity: 0.85;
+  padding: 0.22em 0.6em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  i { font-size: 0.9em; }
+
+  &.exp-ok {
+    color: #0a7d5a;
+    background: rgba(13, 148, 107, 0.12);
+    border-color: rgba(13, 148, 107, 0.3);
+  }
+  &.exp-below {
+    color: #a06800;
+    background: rgba(244, 169, 66, 0.14);
+    border-color: rgba(244, 169, 66, 0.32);
+  }
+}
+
+[data-bs-theme="dark"] .experience-match-badge {
+  &.exp-ok {
+    color: #4fd1a8;
+    background: rgba(79, 209, 168, 0.14);
+    border-color: rgba(79, 209, 168, 0.3);
+  }
+  &.exp-below {
+    color: #f7be6a;
+    background: rgba(247, 190, 106, 0.14);
+    border-color: rgba(247, 190, 106, 0.3);
+  }
 }
 
 .job-card-header {
@@ -509,8 +562,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 1rem;
-  padding-top: 0.75rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
   border-top: 1px solid var(--bs-border-color);
   gap: 0.5rem;
 

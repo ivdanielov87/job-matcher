@@ -4,6 +4,7 @@ import JobCard from './JobCard';
 interface Props {
   data: AnalyzeResponse;
   onReset: () => void;
+  daysBack: number;
 }
 
 function formatTime(ms: number): string {
@@ -11,8 +12,9 @@ function formatTime(ms: number): string {
   return s < 60 ? `${s} сек` : `${Math.floor(s / 60)} мин ${s % 60} сек`;
 }
 
-export default function JobResults({ data, onReset }: Props) {
+export default function JobResults({ data, onReset, daysBack }: Props) {
   const { jobs, total, message, processing_time_ms } = data;
+  const periodLabel = daysBack === 7 ? 'последната седмица' : `последните ${daysBack} дни`;
 
   return (
     <div>
@@ -31,12 +33,16 @@ export default function JobResults({ data, onReset }: Props) {
               </>
             )}
           </h2>
-          {processing_time_ms != null && (
-            <p className="text-muted mb-0" style={{ fontSize: '0.82rem' }}>
-              <i className="bi bi-clock me-1" />
-              Обработено за {formatTime(processing_time_ms)}
-            </p>
-          )}
+          <p className="text-muted mb-0" style={{ fontSize: '0.82rem' }}>
+            <i className="bi bi-calendar3 me-1" />
+            Резултати от {periodLabel}
+            {processing_time_ms != null && (
+              <span className="ms-3">
+                <i className="bi bi-clock me-1" />
+                Обработено за {formatTime(processing_time_ms)}
+              </span>
+            )}
+          </p>
         </div>
         <button className="btn btn-outline-secondary btn-sm" onClick={onReset}>
           <i className="bi bi-arrow-left me-1" />

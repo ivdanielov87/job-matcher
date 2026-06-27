@@ -12,11 +12,13 @@ type AppState = 'form' | 'loading' | 'results';
 export default function Home() {
   const [state, setState] = useState<AppState>('form');
   const [results, setResults] = useState<AnalyzeResponse | null>(null);
+  const [daysBack, setDaysBack] = useState<number>(7);
   const [apiError, setApiError] = useState('');
 
   const handleSubmit = async (file: File, form: FormData) => {
     setState('loading');
     setApiError('');
+    setDaysBack(form.days_back);
 
     const fd = new FormData();
     fd.append('data', file);
@@ -66,17 +68,15 @@ export default function Home() {
               </p>
               <div className="how-it-works mt-4 mb-2">
                 <div className="how-step">
-                  <div className="how-step-icon"><i className="bi bi-file-earmark-pdf-fill" /></div>
+                  <div className="how-step-num">1</div>
                   <div className="how-step-label">Качи CV</div>
                 </div>
-                <div className="how-step-arrow"><i className="bi bi-chevron-right" /></div>
                 <div className="how-step">
-                  <div className="how-step-icon"><i className="bi bi-cpu-fill" /></div>
+                  <div className="how-step-num">2</div>
                   <div className="how-step-label">AI анализ</div>
                 </div>
-                <div className="how-step-arrow"><i className="bi bi-chevron-right" /></div>
                 <div className="how-step">
-                  <div className="how-step-icon"><i className="bi bi-trophy-fill" /></div>
+                  <div className="how-step-num">3</div>
                   <div className="how-step-label">Топ резултати</div>
                 </div>
               </div>
@@ -105,7 +105,7 @@ export default function Home() {
         )}
 
         {state === 'results' && results && (
-          <JobResults data={results} onReset={handleReset} />
+          <JobResults data={results} onReset={handleReset} daysBack={daysBack} />
         )}
       </main>
 

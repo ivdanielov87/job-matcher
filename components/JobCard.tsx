@@ -56,16 +56,14 @@ export default function JobCard({ job }: { job: Job }) {
               )}
             </div>
           </div>
-          <div className="mt-1 d-flex align-items-center gap-2">
-            <small className={`fw-semibold ${cls === 'score-excellent' ? 'text-success' : cls === 'score-good' ? 'text-warning' : 'text-danger'}`}>
+          <div className="mt-1">
+            <small className={`fw-semibold d-block ${cls === 'score-excellent' ? 'text-success' : cls === 'score-good' ? 'text-warning' : 'text-danger'}`}>
               {scoreLabel(job.score)} съвпадение
             </small>
-            {job.experience_match && (
-              <span className="experience-match-badge">
-                <i className="bi bi-patch-check-fill me-1" />
-                Опит ✓
-              </span>
-            )}
+            <span className={`experience-match-badge mt-2 ${job.experience_match ? 'exp-ok' : 'exp-below'}`}>
+              <i className={`bi ${job.experience_match ? 'bi-patch-check-fill' : 'bi-exclamation-triangle-fill'} me-1`} />
+              {job.experience_match ? 'Опитът отговаря' : 'Опит под изискването'}
+            </span>
           </div>
         </div>
 
