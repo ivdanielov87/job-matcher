@@ -1,535 +1,1223 @@
 {
-  "name": "CV Job Matcher — dev.bg",
-  "description": "CV Job Matcher — scrapes dev.bg job listings, parses CV with AI, scores each job vs. the candidate profile, and returns ranked results with match percentages.",
-  "active": true,
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": true,
-    "binaryMode": "separate"
-  },
-  "nodes": [
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "cv-job-matcher",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "id": "56592bed-a457-4f7c-a89a-d109fa941ac0",
-      "name": "Receive CV Upload",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [112, 112],
-      "webhookId": "0a020a74-8fb9-46c0-b12f-a06144d71de8"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "n-loc",
-              "name": "location",
-              "value": "={{ $json.body?.location ?? $json.location ?? \"Remote\" }}",
-              "type": "string"
-            },
-            {
-              "id": "n-lang",
-              "name": "language",
-              "value": "={{ $json.body?.language ?? $json.language ?? \"И двата\" }}",
-              "type": "string"
-            },
-            {
-              "id": "n-email",
-              "name": "user_email",
-              "value": "={{ $json.body?.email ?? $json.email ?? \"\" }}",
-              "type": "string"
-            },
-            {
-              "id": "n-days",
-              "name": "days_back",
-              "value": "={{ Math.min(Number($json.body?.days_back ?? $json.days_back ?? 5), 10) }}",
-              "type": "number"
-            }
-          ]
-        },
-        "includeOtherFields": true,
-        "options": {}
-      },
-      "id": "142060ff-df66-4932-927a-83982ad18005",
-      "name": "Normalize Input",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [320, 112]
-    },
-    {
-      "parameters": {
-        "jsCode": "const item = $input.first();\nconst binaryData = item.binary || {};\nconst binaryKeys = Object.keys(binaryData);\n\nif (binaryKeys.length === 0) {\n  return [{ json: { ...item.json, cv_valid: false, error_code: 'NO_FILE', error_message: 'Моля качете CV файл в PDF формат.' } }];\n}\n\nconst pdfField = binaryKeys.find(k => {\n  const b = binaryData[k];\n  return b.fileType === 'pdf' || (b.mimeType && b.mimeType.toLowerCase().includes('pdf'));\n});\n\nif (!pdfField) {\n  const got = binaryData[binaryKeys[0]];\n  const gotType = got.fileExtension || got.mimeType || 'неизвестен';\n  return [{\n    json: { ...item.json, cv_valid: false, error_code: 'WRONG_FORMAT', error_message: `Само PDF файлове се поддържат. Получен формат: ${gotType}.` },\n    binary: binaryData\n  }];\n}\n\nreturn [{\n  json: { ...item.json, cv_valid: true, binary_field: pdfField },\n  binary: binaryData\n}];"
-      },
-      "id": "d54b5851-344d-42df-98a5-0abba64b9757",
-      "name": "Validate CV File",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [432, 320]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "valid-check",
-              "leftValue": "={{ $json.cv_valid }}",
-              "operator": { "type": "boolean", "operation": "true" },
-              "rightValue": ""
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "89705b31-eeed-4250-b807-06b5b6b7af58",
-      "name": "Input Valid?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [624, 320]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ { success: false, error: $json.error_code, message: $json.error_message } }}",
-        "options": { "responseCode": 400 }
-      },
-      "id": "f81a44f2-6069-4aad-af5a-cce61f5273c6",
-      "name": "Error: Invalid CV",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [624, 496]
-    },
-    {
-      "parameters": {
-        "operation": "pdf",
-        "binaryPropertyName": "={{ $json.binary_field || 'data' }}",
-        "options": { "joinPages": true }
-      },
-      "id": "02230ec7-7a0b-4c15-b58c-ae07121bdd4a",
-      "name": "Extract CV Text",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1.1,
-      "position": [528, 112]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "text-len-check",
-              "leftValue": "={{ ($json.text || '').length }}",
-              "operator": { "type": "number", "operation": "gte" },
-              "rightValue": 200
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "31427831-e78e-4d91-b7a0-63537ce97428",
-      "name": "CV Text Valid?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [816, 320]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ { success: false, error: 'UNREADABLE_CV', message: 'Не можахме да прочетем CV-то. Уверете се, че PDF файлът съдържа текст, а не е сканирано изображение.' } }}",
-        "options": { "responseCode": 400 }
-      },
-      "id": "b0ce1903-a517-4ee3-afe1-166309cc84b0",
-      "name": "Error: Cannot Read CV",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [816, 496]
-    },
-    {
-      "parameters": {
-        "text": "={{ $json.text }}",
-        "schemaType": "fromJson",
-        "jsonSchemaExample": "{\"skills\": [\"JavaScript\", \"Node.js\", \"PostgreSQL\"], \"programming_languages\": [\"JavaScript\", \"Python\"], \"frameworks\": [\"Express\", \"React\"], \"tools\": [\"Docker\", \"Git\", \"AWS\"], \"spoken_languages\": [\"English\", \"Bulgarian\"], \"experience_level\": \"Mid\", \"job_type\": \"Backend\", \"years_of_experience\": 4, \"job_titles\": [\"Backend Developer\", \"Software Engineer\"]}",
-        "options": {
-          "systemPromptTemplate": "Extract the candidate profile from this CV text. For job_type use ONE of: Backend, Frontend, Fullstack, QA, Mobile, DevOps, Data. For experience_level use: Junior (0-2 years), Mid (2-5 years), Senior (5-10 years), Lead (10+ years). Extract all technical skills, languages, frameworks, and tools. For spoken_languages extract all human languages mentioned (e.g. English, Bulgarian, German) — include any language with a proficiency level mentioned in the CV."
-        }
-      },
-      "id": "c2ea4037-65b5-45a9-8824-a0dc63b59bfb",
-      "name": "Parse CV Profile",
-      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.2,
-      "position": [720, 112]
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-3.5-flash",
-        "options": { "temperature": 0.1 }
-      },
-      "id": "d35ab740-fa94-426c-a85b-1a7a2d992bc6",
-      "name": "Gemini Flash (CV Parse)",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [720, -96]
-    },
-    {
-      "parameters": {
-        "jsCode": "const cvProfile = $input.first().json.output;\nconst prefs = $('Normalize Input').first().json;\n\nconst urlMap = {\n  'Backend':  'https://dev.bg/company/jobs/back-end-development/',\n  'Frontend': 'https://dev.bg/company/jobs/front-end-development/',\n  'Fullstack':'https://dev.bg/company/jobs/full-stack-development/',\n  'QA':       'https://dev.bg/company/jobs/quality-assurance/',\n  'Mobile':   'https://dev.bg/company/jobs/mobile/',\n  'DevOps':   'https://dev.bg/company/jobs/infrastructure/',\n  'Data':     'https://dev.bg/company/jobs/data-science-and-analytics/'\n};\n\nconst locationMap = {\n  'Remote':       'remote',\n  'София':       'sofiya',\n  'Пловдив':      'plovdiv',\n  'Варна':        'varna',\n  'Бургас':       'burgas',\n  'Русе':         'ruse',\n  'Стара Загора': 'stara-zagora'\n};\n\nconst jobType = cvProfile?.job_type || 'Backend';\nconst baseUrl = urlMap[jobType] || 'https://dev.bg/company/jobs/';\nconst locationSlug = locationMap[prefs.location];\nconst scrapeUrl = locationSlug\n  ? baseUrl + '?_job_location=' + encodeURIComponent(locationSlug)\n  : baseUrl;\n\nreturn [{\n  json: {\n    cv_profile: {\n      skills:               cvProfile?.skills || [],\n      programming_languages: cvProfile?.programming_languages || [],\n      frameworks:            cvProfile?.frameworks || [],\n      tools:                 cvProfile?.tools || [],\n      spoken_languages:      cvProfile?.spoken_languages || [],\n      experience_level:      cvProfile?.experience_level || 'Mid',\n      job_type:              jobType,\n      years_of_experience:   cvProfile?.years_of_experience || 0,\n      job_titles:            cvProfile?.job_titles || []\n    },\n    scrape_url:      scrapeUrl,\n    location:        prefs.location,\n    language:        prefs.language,\n    user_email:      prefs.user_email,\n    days_back:       prefs.days_back || 5\n  }\n}];"
-      },
-      "id": "9f14d416-5abc-40e5-9ad8-167f91a13947",
-      "name": "Build dev.bg Target URL",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1024, 112]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.firecrawl.dev/v1/scrape",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ { url: $json.scrape_url, formats: [\"markdown\", \"links\"], onlyMainContent: true } }}",
-        "options": {}
-      },
-      "id": "dbf87784-e8a6-4f34-88d0-311f01ca1eda",
-      "name": "Scrape dev.bg via Firecrawl",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [1248, 112]
-    },
-    {
-      "parameters": {
-        "text": "={{ $json.data?.markdown ?? \"\" }}",
-        "schemaType": "fromJson",
-        "jsonSchemaExample": "{\"jobs\": [{\"title\": \"Senior Node.js Developer\", \"company\": \"Tech Corp\", \"url\": \"https://dev.bg/company/jobs/123/\", \"date_posted\": \"2026-06-20\", \"location\": \"Sofia\", \"employment_type\": \"Full-time\", \"description\": \"Requirements: Node.js 5+ years, PostgreSQL, Docker, REST APIs...\"}]}",
-        "options": {
-          "systemPromptTemplate": "=Extract ALL job listings from the page content. Important: today is {{ $now.toISODate() }}. Convert relative dates (e.g. \"5 hours ago\", \"2 days ago\", \"вчера\") to absolute ISO dates (YYYY-MM-DD). For location use the city name or \"Remote\". Extract as complete a description and requirements list as possible. Leave the url field as an empty string."
-        }
-      },
-      "id": "8533ad99-27fd-424a-a2d0-cd9f2edb3aab",
-      "name": "Extract Job Listings",
-      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.2,
-      "position": [1472, 112]
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-3.5-flash",
-        "options": { "temperature": 0.1 }
-      },
-      "id": "4cb64c64-0dd4-4b4b-bf10-c2c166ec968a",
-      "name": "Gemini Flash (Job Extract)",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [1472, -112]
-    },
-    {
-      "id": "eb493a44-fb69-476a-a41c-d71bffb6146d",
-      "name": "Assign Job URLs",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1680, 112],
-      "parameters": {
-        "jsCode": "const item = $input.first();\nconst jobs = (item.json.output?.jobs || []);\nconst daysBack = $('Build dev.bg Target URL').first().json.days_back || 5;\nconst cutoff = new Date();\ncutoff.setDate(cutoff.getDate() - daysBack);\n\nconst allLinks = $('Scrape dev.bg via Firecrawl').first().json.data?.links || [];\nconst jobLinks = allLinks.filter(l =>\n  typeof l === 'string' && l.includes('dev.bg/company/jobads/')\n);\n\n// Assign URL by position and filter by date in one pass\nconst jobsWithUrls = jobs\n  .map((job, i) => ({ ...job, url: jobLinks[i] || '' }))\n  .filter(job => {\n    if (!job.date_posted) return true;\n    return new Date(job.date_posted) >= cutoff;\n  });\n\nreturn [{ json: { output: { jobs: jobsWithUrls } } }];"
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "jobs-count-check",
-              "leftValue": "={{ ($json.output?.jobs || []).length }}",
-              "operator": { "type": "number", "operation": "gt" },
-              "rightValue": 0
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "3dabc55d-a9cc-4e86-813a-5a29cc6ae5d5",
-      "name": "Jobs Found?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [1680, 672]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ { success: true, jobs: [], total: 0, processed_at: $now.toISO(), message: 'Не намерихме обяви, отговарящи на критериите. Опитайте с по-широки предпочитания или по-голям брой дни.' } }}",
-        "options": { "responseCode": 200 }
-      },
-      "id": "cbcefd20-4fcc-439d-a722-8424e75a6799",
-      "name": "Return Empty Results",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [2000, 688]
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "output.jobs",
-        "options": {}
-      },
-      "id": "e8d4d770-29dc-4a93-85c6-b0ff9bf65e1b",
-      "name": "Split Jobs Into Items",
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [1808, 112]
-    },
-    {
-      "parameters": { "maxItems": 10 },
-      "id": "69dafb77-612a-4c93-a25b-05922df46bf0",
-      "name": "Limit: Max 10 Jobs",
-      "type": "n8n-nodes-base.limit",
-      "typeVersion": 1,
-      "position": [1440, 400]
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "score-text",
-              "name": "scoring_text",
-              "value": "={{ \"=== CV PROFILE ===\\nSkills: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.skills.join(\", \") + \"\\nProgramming Languages: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.programming_languages.join(\", \") + \"\\nFrameworks: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.frameworks.join(\", \") + \"\\nTools: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.tools.join(\", \") + \"\\nSpoken Languages: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.spoken_languages.join(\", \") + \"\\nExperience Level: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.experience_level + \"\\nYears: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.years_of_experience + \"\\nPrevious Roles: \" + $(\"Build dev.bg Target URL\").first().json.cv_profile.job_titles.join(\", \") + \"\\n\\n=== JOB LISTING ===\\nTitle: \" + $json.title + \"\\nCompany: \" + $json.company + \"\\nLocation: \" + $json.location + \"\\nType: \" + $json.employment_type + \"\\nDescription: \" + $json.description }}",
-              "type": "string"
-            }
-          ]
-        },
-        "includeOtherFields": true,
-        "options": {}
-      },
-      "id": "653413f8-12a3-447b-9cae-66c654263258",
-      "name": "Compose Scoring Input",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [1632, 400]
-    },
-    {
-      "parameters": {
-        "text": "={{ $json.scoring_text }}",
-        "schemaType": "fromJson",
-        "jsonSchemaExample": "{\"score\": 78, \"matched_skills\": [\"Node.js\", \"PostgreSQL\", \"REST API\"], \"missing_skills\": [\"Angular\", \"HTML\", \"CSS\"], \"experience_match\": true, \"summary\": \"Силно backend съвпадение — full-stack позиция, липсва frontend опит\"}",
-        "options": {
-          "systemPromptTemplate": "You are a job matching expert. Given a CV profile and job listing, score the percentage of JOB requirements that the candidate covers (0-100). RULES: Do NOT exclude jobs for having extra requirements — show them with lower scores. matched_skills = requirements the candidate has. missing_skills = requirements the candidate lacks. Spoken Languages (e.g. English, Bulgarian) listed under 'Spoken Languages' in the CV profile are confirmed — do NOT list them as missing_skills. Write the summary in Bulgarian in one sentence.",
-          "batching": { "batchSize": 1, "delayBetweenBatches": 0 }
-        }
-      },
-      "id": "d55d2942-0097-4a59-8ee1-80498619f911",
-      "name": "Score Job vs CV",
-      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.2,
-      "position": [1824, 400]
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-3.5-flash",
-        "options": { "temperature": 0.1 }
-      },
-      "id": "e49cde4c-3bfd-4b94-9c6a-158e0bedd12b",
-      "name": "Gemini Flash (Scoring)",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [1824, 576]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Index-match scored items with original job data (Information Extractor discards original fields)\nconst scoreItems = $input.all();\nconst originalItems = $('Compose Scoring Input').all();\n\nreturn scoreItems.map((scoreItem, i) => {\n  const scoreData = scoreItem.json.output || {};\n  const jobData = (originalItems[i] || { json: {} }).json;\n\n  return {\n    json: {\n      title: jobData.title || '',\n      company: jobData.company || '',\n      url: jobData.url || '',\n      date_posted: jobData.date_posted || '',\n      location: jobData.location || '',\n      employment_type: jobData.employment_type || '',\n      description: (jobData.description || '').substring(0, 500),\n      score: typeof scoreData.score === 'number' ? scoreData.score : 0,\n      matched_skills: Array.isArray(scoreData.matched_skills) ? scoreData.matched_skills : [],\n      missing_skills: Array.isArray(scoreData.missing_skills) ? scoreData.missing_skills : [],\n      experience_match: scoreData.experience_match === true,\n      summary: scoreData.summary || ''\n    }\n  };\n});"
-      },
-      "id": "254d57b4-c688-4a70-81c9-ce5f7697f27f",
-      "name": "Merge Score with Job",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1968, 400]
-    },
-    {
-      "parameters": {
-        "sortFieldsUi": {
-          "sortField": [{ "fieldName": "score", "order": "descending" }]
-        },
-        "options": {}
-      },
-      "id": "be774883-1cb0-46bc-b333-4d23d52fd9a1",
-      "name": "Sort by Score",
-      "type": "n8n-nodes-base.sort",
-      "typeVersion": 1,
-      "position": [2288, 400],
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "aggregate": "aggregateAllItemData",
-        "destinationFieldName": "jobs",
-        "options": {}
-      },
-      "id": "4162e51e-f5a7-4363-9c83-7a75845be987",
-      "name": "Aggregate Job Results",
-      "type": "n8n-nodes-base.aggregate",
-      "typeVersion": 1,
-      "position": [2480, 400],
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "r-jobs",
-              "name": "jobs",
-              "value": "={{ ($json.jobs || []).filter(j => j.score >= 30) }}",
-              "type": "array"
-            },
-            {
-              "id": "r-total",
-              "name": "total",
-              "value": "={{ ($json.jobs || []).filter(j => j.score >= 30).length }}",
-              "type": "number"
-            },
-            {
-              "id": "r-time",
-              "name": "processed_at",
-              "value": "={{ $now.toISO() }}",
-              "type": "string"
-            },
-            {
-              "id": "r-ok",
-              "name": "success",
-              "value": true,
-              "type": "boolean"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "ba717dab-edc3-4f33-85c7-25dc895b99f2",
-      "name": "Build Final Response",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [2672, 400]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "email-cond",
-              "leftValue": "={{ $('Build dev.bg Target URL').first().json.user_email }}",
-              "operator": { "type": "string", "operation": "notEmpty" }
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "7acec30e-edee-44ea-82e1-a0c86de5efcf",
-      "name": "Email Provided?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [2864, 400]
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $('Build dev.bg Target URL').first().json.user_email }}",
-        "subject": "={{ \"CV Job Matcher — \" + $(\"Build Final Response\").first().json.total + \" подходящи обяви намерени\" }}",
-        "message": "={{ \"<h2>Намерихме \" + $(\"Build Final Response\").first().json.total + \" подходящи обяви!</h2><ul>\" + $(\"Build Final Response\").first().json.jobs.map(function(j) { return \"<li><strong>\" + j.title + \"</strong> — \" + j.company + \"<br>Съвпадение: <b>\" + j.score + \"%</b><br>\" + (j.summary || \"\") + \"<br><a href='\" + j.url + \"'>Виж обявата →</a></li>\"; }).join(\"\") + \"</ul>\" }}",
-        "options": { "appendAttribution": false }
-      },
-      "id": "0d57e652-b0bd-4120-a4ae-7ce193d544d3",
-      "name": "Send Results Email",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [3040, 304],
-      "webhookId": "782e0508-a7fd-44d1-b441-e13c8e4de2fe",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ $('Build Final Response').first().json }}",
-        "options": {}
-      },
-      "id": "a194bb9f-f8bb-40e1-9740-09d701fabad7",
-      "name": "Return Results",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [3232, 416]
-    }
-  ],
-  "connections": {
-    "Receive CV Upload": { "main": [[{ "node": "Normalize Input", "type": "main", "index": 0 }]] },
-    "Normalize Input": { "main": [[{ "node": "Validate CV File", "type": "main", "index": 0 }]] },
-    "Validate CV File": { "main": [[{ "node": "Input Valid?", "type": "main", "index": 0 }]] },
-    "Input Valid?": {
-      "main": [
-        [{ "node": "Extract CV Text", "type": "main", "index": 0 }],
-        [{ "node": "Error: Invalid CV", "type": "main", "index": 0 }]
-      ]
-    },
-    "Extract CV Text": { "main": [[{ "node": "CV Text Valid?", "type": "main", "index": 0 }]] },
-    "CV Text Valid?": {
-      "main": [
-        [{ "node": "Parse CV Profile", "type": "main", "index": 0 }],
-        [{ "node": "Error: Cannot Read CV", "type": "main", "index": 0 }]
-      ]
-    },
-    "Gemini Flash (CV Parse)": { "ai_languageModel": [[{ "node": "Parse CV Profile", "type": "ai_languageModel", "index": 0 }]] },
-    "Parse CV Profile": { "main": [[{ "node": "Build dev.bg Target URL", "type": "main", "index": 0 }]] },
-    "Build dev.bg Target URL": { "main": [[{ "node": "Scrape dev.bg via Firecrawl", "type": "main", "index": 0 }]] },
-    "Scrape dev.bg via Firecrawl": { "main": [[{ "node": "Extract Job Listings", "type": "main", "index": 0 }]] },
-    "Gemini Flash (Job Extract)": { "ai_languageModel": [[{ "node": "Extract Job Listings", "type": "ai_languageModel", "index": 0 }]] },
-    "Extract Job Listings": { "main": [[{ "node": "Assign Job URLs", "type": "main", "index": 0 }]] },
-    "Assign Job URLs": { "main": [[{ "node": "Jobs Found?", "type": "main", "index": 0 }]] },
-    "Jobs Found?": {
-      "main": [
-        [{ "node": "Split Jobs Into Items", "type": "main", "index": 0 }],
-        [{ "node": "Return Empty Results", "type": "main", "index": 0 }]
-      ]
-    },
-    "Split Jobs Into Items": { "main": [[{ "node": "Limit: Max 10 Jobs", "type": "main", "index": 0 }]] },
-    "Limit: Max 10 Jobs": { "main": [[{ "node": "Compose Scoring Input", "type": "main", "index": 0 }]] },
-    "Compose Scoring Input": { "main": [[{ "node": "Score Job vs CV", "type": "main", "index": 0 }]] },
-    "Gemini Flash (Scoring)": { "ai_languageModel": [[{ "node": "Score Job vs CV", "type": "ai_languageModel", "index": 0 }]] },
-    "Score Job vs CV": { "main": [[{ "node": "Merge Score with Job", "type": "main", "index": 0 }]] },
-    "Merge Score with Job": { "main": [[{ "node": "Sort by Score", "type": "main", "index": 0 }]] },
-    "Sort by Score": { "main": [[{ "node": "Aggregate Job Results", "type": "main", "index": 0 }]] },
-    "Aggregate Job Results": { "main": [[{ "node": "Build Final Response", "type": "main", "index": 0 }]] },
-    "Build Final Response": { "main": [[{ "node": "Email Provided?", "type": "main", "index": 0 }]] },
-    "Email Provided?": {
-      "main": [
-        [{ "node": "Send Results Email", "type": "main", "index": 0 }],
-        [{ "node": "Return Results", "type": "main", "index": 0 }]
-      ]
-    },
-    "Send Results Email": { "main": [[{ "node": "Return Results", "type": "main", "index": 0 }]] }
-  }
+    "name":  "CV Job Matcher — dev.bg",
+    "description":  "CV Job Matcher — scrapes dev.bg job listings, parses CV with AI, scores each job vs. the candidate profile, and returns ranked results with match percentages.",
+    "active":  true,
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "availableInMCP":  true,
+                     "binaryMode":  "separate"
+                 },
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "cv-job-matcher",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "56592bed-a457-4f7c-a89a-d109fa941ac0",
+                      "name":  "Receive CV Upload",
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       240,
+                                       112
+                                   ],
+                      "webhookId":  "0a020a74-8fb9-46c0-b12f-a06144d71de8"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "n-loc",
+                                                                                     "name":  "location",
+                                                                                     "value":  "={{ $json.body?.location ?? $json.location ?? \"Remote\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "n-lang",
+                                                                                     "name":  "language",
+                                                                                     "value":  "={{ $json.body?.language ?? $json.language ?? \"И двата\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "n-email",
+                                                                                     "name":  "user_email",
+                                                                                     "value":  "={{ $json.body?.email ?? $json.email ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "n-days",
+                                                                                     "name":  "days_back",
+                                                                                     "value":  "={{ Math.min(Number($json.body?.days_back ?? $json.days_back ?? 7), 14) }}",
+                                                                                     "type":  "number"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "n-start",
+                                                                                     "name":  "workflow_start",
+                                                                                     "value":  "={{ $now.toMillis() }}",
+                                                                                     "type":  "number"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "includeOtherFields":  true,
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "142060ff-df66-4932-927a-83982ad18005",
+                      "name":  "Normalize Input",
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       464,
+                                       112
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "text":  "={{ $json.text }}",
+                                         "schemaType":  "fromJson",
+                                         "jsonSchemaExample":  "{\"skills\": [\"JavaScript\", \"Node.js\", \"PostgreSQL\"], \"programming_languages\": [\"JavaScript\", \"Python\"], \"primary_languages\": [\"JavaScript\"], \"frameworks\": [\"Express\", \"React\"], \"tools\": [\"Docker\", \"Git\", \"AWS\"], \"spoken_languages\": [\"English\", \"Bulgarian\"], \"experience_level\": \"Mid\", \"job_type\": \"Backend\", \"years_of_experience\": 4, \"job_titles\": [\"Backend Developer\", \"Software Engineer\"]}",
+                                         "options":  {
+                                                         "systemPromptTemplate":  "You are a careful CV analyst. Read the entire CV text thoroughly from beginning to end before extracting anything. Do not rush - accuracy matters.\n\nExtract the following fields:\n\nskills - ALL non-technical competencies and methodologies relevant to software development (e.g. Responsive Design, REST APIs, Clean architecture, Agile, Code review, Team leadership). Include only skills applicable to software roles. Do NOT include skills from unrelated non-technical positions. Do NOT put programming languages, frameworks or tools here.\n\nprogramming_languages - ALL programming and scripting languages found anywhere in the CV (e.g. JavaScript, TypeScript, Python, SQL, HTML, CSS, SCSS). Include markup and stylesheet languages.\n\nprimary_languages - the SUBSET of programming_languages the candidate has actually USED in professional work experience. Judge from the employment / work-history section and job titles (e.g. a role titled \"Java Developer\", or several years building in a language). EXCLUDE languages only listed as \"familiar with\", or appearing solely in a skills list with no backing work experience. If genuinely unsure, include the languages tied to the candidate\u0027s main roles.\n\nframeworks - ALL frameworks, libraries and runtimes (e.g. Angular, React, Node.js, RxJS, Spring Boot, .NET, Express). Include even those mentioned briefly.\n\ntools - ALL tools, platforms, services and databases (e.g. Git, Docker, Jira, Figma, AWS, PostgreSQL, Azure, Webpack). Include anything mentioned in a tools or tech stack section.\n\nspoken_languages - ALL human languages mentioned anywhere in the CV, including those with a proficiency level (e.g. English B2, Bulgarian native). Never omit these.\n\nexperience_level - infer from total years of relevant technical professional experience: Junior = 0-2 years, Mid = 2-5 years, Senior = 5-10 years, Lead = 10+ years.\n\njob_type - the candidate\u0027s PRIMARY specialisation. Choose ONE: Backend, Frontend, Fullstack, QA, Mobile, DevOps, Data. Base this on the majority of work history and the dominant skill set. If there is strong experience in both Frontend and Backend, choose Fullstack.\n\nyears_of_experience - total years of relevant technical/software professional experience as an integer. Count only tech/software roles.\n\njob_titles - all professional titles held, taken from the work history section.\n\nImportant: be exhaustive. If something appears only once in the CV it still counts. Read every section including summaries, project descriptions and tech stack lists before finalising your output."
+                                                     }
+                                     },
+                      "id":  "c2ea4037-65b5-45a9-8824-a0dc63b59bfb",
+                      "name":  "Parse CV Profile",
+                      "type":  "@n8n/n8n-nodes-langchain.informationExtractor",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       704,
+                                       112
+                                   ],
+                      "retryOnFail":  true,
+                      "maxTries":  3,
+                      "waitBetweenTries":  5000
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const cvProfile = $input.first().json.output;\nconst prefs = $(\u0027Normalize Input\u0027).first().json;\n\nconst urlMap = {\n  \u0027Backend\u0027:  \u0027https://dev.bg/company/jobs/back-end-development/\u0027,\n  \u0027Frontend\u0027: \u0027https://dev.bg/company/jobs/front-end-development/\u0027,\n  \u0027Fullstack\u0027: \u0027https://dev.bg/company/jobs/full-stack-development/\u0027,\n  \u0027QA\u0027:       \u0027https://dev.bg/company/jobs/quality-assurance/\u0027,\n  \u0027Mobile\u0027:   \u0027https://dev.bg/company/jobs/mobile/\u0027,\n  \u0027DevOps\u0027:   \u0027https://dev.bg/company/jobs/infrastructure/\u0027,\n  \u0027Data\u0027:     \u0027https://dev.bg/company/jobs/data-science-and-analytics/\u0027\n};\n\nconst categoryMap = {\n  \u0027Backend\u0027:  [\u0027Backend\u0027, \u0027Fullstack\u0027],\n  \u0027Frontend\u0027: [\u0027Frontend\u0027, \u0027Fullstack\u0027],\n  \u0027Fullstack\u0027: [\u0027Backend\u0027, \u0027Frontend\u0027, \u0027Fullstack\u0027],\n  \u0027QA\u0027:       [\u0027QA\u0027],\n  \u0027Mobile\u0027:   [\u0027Mobile\u0027],\n  \u0027DevOps\u0027:   [\u0027DevOps\u0027],\n  \u0027Data\u0027:     [\u0027Data\u0027]\n};\n\nconst locationMap = {\n  \u0027Remote\u0027:       \u0027remote\u0027,\n  \u0027София\u0027:        \u0027sofiya\u0027,\n  \u0027Пловдив\u0027:      \u0027plovdiv\u0027,\n  \u0027Варна\u0027:        \u0027varna\u0027,\n  \u0027Бургас\u0027:       \u0027burgas\u0027,\n  \u0027Русе\u0027:         \u0027ruse\u0027,\n  \u0027Стара Загора\u0027: \u0027stara-zagora\u0027\n};\n\nconst jobType = cvProfile?.job_type || \u0027Backend\u0027;\nconst categories = categoryMap[jobType] || [jobType];\nconst locationSlug = locationMap[prefs.location];\n\nconst cvProfileData = {\n  skills:                cvProfile?.skills || [],\n  programming_languages: cvProfile?.programming_languages || [],\n  primary_languages:     cvProfile?.primary_languages || [],\n  frameworks:            cvProfile?.frameworks || [],\n  tools:                 cvProfile?.tools || [],\n  spoken_languages:      cvProfile?.spoken_languages || [],\n  experience_level:      cvProfile?.experience_level || \u0027Mid\u0027,\n  job_type:              jobType,\n  years_of_experience:   cvProfile?.years_of_experience || 0,\n  job_titles:            cvProfile?.job_titles || []\n};\n\n// One page-1 URL per category. Pagination (fetching the remaining pages) is handled in\n// \"Parse \u0026 Merge Categories\", which reads the real page count from each page-1 HTML.\nreturn categories.map(cat =\u003e {\n  const baseUrl = urlMap[cat];\n  const scrapeUrl = locationSlug\n    ? baseUrl + \u0027?_job_location=\u0027 + encodeURIComponent(locationSlug)\n    : baseUrl;\n  return {\n    json: {\n      cv_profile:  cvProfileData,\n      scrape_url:  scrapeUrl,\n      category:    cat,\n      location:    prefs.location,\n      language:    prefs.language,\n      user_email:  prefs.user_email,\n      days_back:   prefs.days_back || 5\n    }\n  };\n});\n"
+                                     },
+                      "id":  "9f14d416-5abc-40e5-9ad8-167f91a13947",
+                      "name":  "Build dev.bg Target URL",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       976,
+                                       112
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "url":  "={{ $json.scrape_url }}",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "User-Agent",
+                                                                                         "value":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "options":  {
+                                                         "response":  {
+                                                                          "response":  {
+                                                                                           "responseFormat":  "text"
+                                                                                       }
+                                                                      }
+                                                     }
+                                     },
+                      "id":  "dbf87784-e8a6-4f34-88d0-311f01ca1eda",
+                      "name":  "Fetch dev.bg",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.4,
+                      "position":  [
+                                       1152,
+                                       112
+                                   ],
+                      "retryOnFail":  true,
+                      "maxTries":  2,
+                      "waitBetweenTries":  1000,
+                      "onError":  "continueRegularOutput"
+                  },
+                  {
+                      "parameters":  {
+                                         "text":  "={{ $json.summary_text }}",
+                                         "schemaType":  "fromJson",
+                                         "jsonSchemaExample":  "{\"summaries\": [{\"job_index\": 1, \"summary\": \"Силно съвпадение по Java и Spring, липсва Kubernetes.\"}]}",
+                                         "options":  {
+                                                         "systemPromptTemplate":  "You write concise Bulgarian one-sentence summaries for CV-to-job matches. For each job you are given its already-computed matched skills, missing skills, score, and experience match. Write ONE natural Bulgarian sentence per job that highlights the key technical strength and the main gap. Use ONLY the skills given to you — never invent or add skills. Echo each job\u0027s job_index exactly. Return exactly one entry per job, in order."
+                                                     }
+                                     },
+                      "id":  "d55d2942-0097-4a59-8ee1-80498619f911",
+                      "name":  "Score All Jobs (Batch)",
+                      "type":  "@n8n/n8n-nodes-langchain.informationExtractor",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       3360,
+                                       96
+                                   ],
+                      "retryOnFail":  true,
+                      "maxTries":  3,
+                      "waitBetweenTries":  5000
+                  },
+                  {
+                      "parameters":  {
+                                         "sortFieldsUi":  {
+                                                              "sortField":  [
+                                                                                {
+                                                                                    "fieldName":  "score",
+                                                                                    "order":  "descending"
+                                                                                }
+                                                                            ]
+                                                          },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "be774883-1cb0-46bc-b333-4d23d52fd9a1",
+                      "name":  "Sort by Score",
+                      "type":  "n8n-nodes-base.sort",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3824,
+                                       96
+                                   ],
+                      "alwaysOutputData":  true
+                  },
+                  {
+                      "parameters":  {
+                                         "aggregate":  "aggregateAllItemData",
+                                         "destinationFieldName":  "jobs",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "4162e51e-f5a7-4363-9c83-7a75845be987",
+                      "name":  "Aggregate Job Results",
+                      "type":  "n8n-nodes-base.aggregate",
+                      "typeVersion":  1,
+                      "position":  [
+                                       4000,
+                                       96
+                                   ],
+                      "alwaysOutputData":  true
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "r-jobs",
+                                                                                     "name":  "jobs",
+                                                                                     "value":  "={{ ($json.jobs || []).filter(j =\u003e j.score \u003e= (($json.jobs || []).filter(x =\u003e x.score \u003e= 40).length \u003e= 4 ? 40 : 30)) }}",
+                                                                                     "type":  "array"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "r-total",
+                                                                                     "name":  "total",
+                                                                                     "value":  "={{ ($json.jobs || []).filter(j =\u003e j.score \u003e= (($json.jobs || []).filter(x =\u003e x.score \u003e= 40).length \u003e= 4 ? 40 : 30)).length }}",
+                                                                                     "type":  "number"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "r-gaps",
+                                                                                     "name":  "cv_review",
+                                                                                     "value":  "={{ { market_gaps: ($json.market_gaps || []) } }}",
+                                                                                     "type":  "object"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "r-time",
+                                                                                     "name":  "processed_at",
+                                                                                     "value":  "={{ $now.toISO() }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "r-ok",
+                                                                                     "name":  "success",
+                                                                                     "value":  true,
+                                                                                     "type":  "boolean"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "r-ms",
+                                                                                     "name":  "processing_time_ms",
+                                                                                     "value":  "={{ $now.toMillis() - $(\u0027Normalize Input\u0027).first().json.workflow_start }}",
+                                                                                     "type":  "number"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ba717dab-edc3-4f33-85c7-25dc895b99f2",
+                      "name":  "Build Final Response",
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       4352,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "loose",
+                                                                            "version":  1
+                                                                        },
+                                                            "combinator":  "and",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "email-cond",
+                                                                                   "leftValue":  "={{ $(\u0027Build dev.bg Target URL\u0027).first().json.user_email }}",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEmpty"
+                                                                                                }
+                                                                               }
+                                                                           ]
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "7acec30e-edee-44ea-82e1-a0c86de5efcf",
+                      "name":  "Email Provided?",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       4528,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "sendTo":  "={{ $(\u0027Build dev.bg Target URL\u0027).first().json.user_email }}",
+                                         "subject":  "={{ \"CV Job Matcher — \" + $(\"Build Final Response\").first().json.total + \" подходящи обяви намерени\" }}",
+                                         "message":  "={{ \"\u003ch2\u003eНамерихме \" + $(\"Build Final Response\").first().json.total + \" подходящи обяви!\u003c/h2\u003e\u003cul\u003e\" + $(\"Build Final Response\").first().json.jobs.map(function(j) { return \"\u003cli\u003e\u003cstrong\u003e\" + j.title + \"\u003c/strong\u003e — \" + j.company + \"\u003cbr\u003eСъвпадение: \u003cb\u003e\" + j.score + \"%\u003c/b\u003e\u003cbr\u003e\" + (j.summary || \"\") + \"\u003cbr\u003e\u003ca href=\u0027\" + j.url + \"\u0027\u003eВиж обявата →\u003c/a\u003e\u003c/li\u003e\"; }).join(\"\") + \"\u003c/ul\u003e\" }}",
+                                         "options":  {
+                                                         "appendAttribution":  false
+                                                     }
+                                     },
+                      "id":  "0d57e652-b0bd-4120-a4ae-7ce193d544d3",
+                      "name":  "Send Results Email",
+                      "type":  "n8n-nodes-base.gmail",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       4688,
+                                       -48
+                                   ],
+                      "webhookId":  "782e0508-a7fd-44d1-b441-e13c8e4de2fe",
+                      "disabled":  true
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ $(\u0027Build Final Response\u0027).first().json }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "a194bb9f-f8bb-40e1-9740-09d701fabad7",
+                      "name":  "Return Results",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       4864,
+                                       112
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const item = $input.first();\nconst binaryData = item.binary || {};\nconst binaryKeys = Object.keys(binaryData);\n\nif (binaryKeys.length === 0) {\n  return [{ json: { ...item.json, cv_valid: false, error_code: \u0027NO_FILE\u0027, error_message: \u0027Моля качете CV файл в PDF формат.\u0027 } }];\n}\n\nconst pdfField = binaryKeys.find(k =\u003e {\n  const b = binaryData[k];\n  return b.fileType === \u0027pdf\u0027 || (b.mimeType \u0026\u0026 b.mimeType.toLowerCase().includes(\u0027pdf\u0027));\n});\n\nif (!pdfField) {\n  const got = binaryData[binaryKeys[0]];\n  const gotType = got.fileExtension || got.mimeType || \u0027неизвестен\u0027;\n  return [{\n    json: { ...item.json, cv_valid: false, error_code: \u0027WRONG_FORMAT\u0027, error_message: `Само PDF файлове се поддържат. Файлът е в ${gotType} формат — моля конвертирайте до PDF.` },\n    binary: binaryData\n  }];\n}\n\nreturn [{\n  json: { ...item.json, cv_valid: true, binary_field: pdfField },\n  binary: binaryData\n}];"
+                                     },
+                      "id":  "d54b5851-344d-42df-98a5-0abba64b9757",
+                      "name":  "Validate CV File",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       320,
+                                       432
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  false,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "loose",
+                                                                            "version":  1
+                                                                        },
+                                                            "combinator":  "and",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "valid-check",
+                                                                                   "leftValue":  "={{ $json.cv_valid }}",
+                                                                                   "operator":  {
+                                                                                                    "type":  "boolean",
+                                                                                                    "operation":  "true"
+                                                                                                },
+                                                                                   "rightValue":  ""
+                                                                               }
+                                                                           ]
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "89705b31-eeed-4250-b807-06b5b6b7af58",
+                      "name":  "Input Valid?",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       480,
+                                       432
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ { success: false, error: $json.error_code, message: $json.error_message } }}",
+                                         "options":  {
+                                                         "responseCode":  400
+                                                     }
+                                     },
+                      "id":  "f81a44f2-6069-4aad-af5a-cce61f5273c6",
+                      "name":  "Error: Invalid CV",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       592,
+                                       608
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  false,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "loose",
+                                                                            "version":  1
+                                                                        },
+                                                            "combinator":  "and",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "text-len-check",
+                                                                                   "leftValue":  "={{ ($json.text || \u0027\u0027).length }}",
+                                                                                   "operator":  {
+                                                                                                    "type":  "number",
+                                                                                                    "operation":  "gte"
+                                                                                                },
+                                                                                   "rightValue":  200
+                                                                               }
+                                                                           ]
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "31427831-e78e-4d91-b7a0-63537ce97428",
+                      "name":  "CV Text Valid?",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       1120,
+                                       400
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ { success: false, error: \u0027UNREADABLE_CV\u0027, message: \u0027Не можахме да прочетем CV-то. Уверете се, че PDF файлът съдържа текст, а не е сканирано изображение.\u0027 } }}",
+                                         "options":  {
+                                                         "responseCode":  400
+                                                     }
+                                     },
+                      "id":  "b0ce1903-a517-4ee3-afe1-166309cc84b0",
+                      "name":  "Error: Cannot Read CV",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       864,
+                                       608
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  false,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "loose",
+                                                                            "version":  1
+                                                                        },
+                                                            "combinator":  "and",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "jobs-count-check",
+                                                                                   "leftValue":  "={{ ($json.output?.jobs || []).length }}",
+                                                                                   "operator":  {
+                                                                                                    "type":  "number",
+                                                                                                    "operation":  "gt"
+                                                                                                },
+                                                                                   "rightValue":  0
+                                                                               }
+                                                                           ]
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "3dabc55d-a9cc-4e86-813a-5a29cc6ae5d5",
+                      "name":  "Jobs Found?",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       1824,
+                                       112
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ { success: true, jobs: [], total: 0, processed_at: $now.toISO(), message: \u0027Не намерихме обяви, отговарящи на критериите. Опитайте с по-широки предпочитания или по-голям брой дни.\u0027 } }}",
+                                         "options":  {
+                                                         "responseCode":  200
+                                                     }
+                                     },
+                      "id":  "cbcefd20-4fcc-439d-a722-8424e75a6799",
+                      "name":  "Return Empty Results",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       1936,
+                                       304
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const item = $input.first();\nconst jobs = (item.json.output?.jobs || []);\nconst daysBack = $(\u0027Build dev.bg Target URL\u0027).first().json.days_back || 5;\nconst cutoff = new Date();\ncutoff.setDate(cutoff.getDate() - daysBack);\n\nconst jobsFiltered = jobs.filter(job =\u003e {\n  if (!job.date_posted) return true;\n  return new Date(job.date_posted) \u003e= cutoff;\n});\n\nreturn [{ json: { output: { jobs: jobsFiltered } } }];"
+                                     },
+                      "id":  "eb493a44-fb69-476a-a41c-d71bffb6146d",
+                      "name":  "Assign Job URLs",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1472,
+                                       112
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const item = $input.first();\nconst jobs = (item.json.jobs || []).slice(0, 40);\nconst cv = $(\u0027Build dev.bg Target URL\u0027).first().json.cv_profile;\n\nconst cvSection = \u0027=== CV PROFILE ===\\n\u0027 +\n  \u0027Skills: \u0027 + cv.skills.join(\u0027, \u0027) + \u0027\\n\u0027 +\n  \u0027Programming Languages: \u0027 + cv.programming_languages.join(\u0027, \u0027) + \u0027\\n\u0027 +\n  \u0027Frameworks: \u0027 + cv.frameworks.join(\u0027, \u0027) + \u0027\\n\u0027 +\n  \u0027Tools: \u0027 + cv.tools.join(\u0027, \u0027) + \u0027\\n\u0027 +\n  \u0027Spoken Languages: \u0027 + cv.spoken_languages.join(\u0027, \u0027) + \u0027\\n\u0027 +\n  \u0027Experience Level: \u0027 + cv.experience_level + \u0027\\n\u0027 +\n  \u0027Years of Experience: \u0027 + cv.years_of_experience + \u0027\\n\u0027 +\n  \u0027Previous Roles: \u0027 + cv.job_titles.join(\u0027, \u0027);\n\nconst jobsSection = jobs.map((job, i) =\u003e\n  \u0027--- JOB \u0027 + (i + 1) + \u0027 ---\\n\u0027 +\n  \u0027Title: \u0027 + job.title + \u0027\\n\u0027 +\n  \u0027Company: \u0027 + job.company + \u0027\\n\u0027 +\n  \u0027Location: \u0027 + job.location + \u0027\\n\u0027 +\n  \u0027Type: \u0027 + job.employment_type + \u0027\\n\u0027 +\n  \u0027Description: \u0027 + (job.full_description || job.description || \u0027N/A\u0027)\n).join(\u0027\\n\\n\u0027);\n\nconst scoring_text = cvSection + \u0027\\n\\n=== JOB LISTINGS (\u0027 + jobs.length + \u0027 total) ===\\n\\n\u0027 + jobsSection + \u0027\\n\\nReturn a JSON results array with exactly \u0027 + jobs.length + \u0027 entries, one per job in order.\u0027;\n\nconst jobs_text = \u0027=== JOB LISTINGS (\u0027 + jobs.length + \u0027 total) ===\\n\\n\u0027 + jobs.map((job, i) =\u003e\n  \u0027--- JOB \u0027 + (i + 1) + \u0027 ---\\n\u0027 +\n  \u0027Title: \u0027 + job.title + \u0027\\n\u0027 +\n  \u0027Company: \u0027 + job.company + \u0027\\n\u0027 +\n  \u0027Description: \u0027 + (job.full_description || job.description || \u0027N/A\u0027)\n).join(\u0027\\n\\n\u0027) + \u0027\\n\\nReturn a JSON requirements array with exactly \u0027 + jobs.length + \u0027 entries, one per job in order.\u0027;\n\nreturn [{ json: { scoring_text, jobs, jobs_text, cv_profile: cv } }];"
+                                     },
+                      "id":  "814048ab-2460-4101-af99-d9141ac17e63",
+                      "name":  "Prepare Batch Input",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2768,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const summaries = (($input.first().json.output) || {}).summaries || [];\nconst scored = $(\u0027Build Scoring Input\u0027).first().json.scored || [];\nconst jobs = $(\u0027Prepare Batch Input\u0027).first().json.jobs || [];\nconst cv = $(\u0027Prepare Batch Input\u0027).first().json.cv_profile || {};\nconst requirements = (($(\u0027Extract Job Requirements\u0027).first().json.output) || {}).requirements || [];\n\nfunction levelRank(s){\n  const t = \u0027 \u0027 + (s||\u0027\u0027).toLowerCase() + \u0027 \u0027;\n  if (t.includes(\u0027lead\u0027)||t.includes(\u0027principal\u0027)||t.includes(\u0027staff\u0027)||t.includes(\u0027chief\u0027)||t.includes(\u0027architect\u0027)||t.includes(\u0027head of\u0027)) return 4;\n  if (t.includes(\u0027senior\u0027)||t.includes(\u0027sr.\u0027)||t.includes(\u0027sr \u0027)) return 3;\n  if (t.includes(\u0027middle\u0027)||t.includes(\u0027mid-\u0027)||t.includes(\u0027mid \u0027)||t.includes(\u0027intermediate\u0027)||t.includes(\u0027regular\u0027)) return 2;\n  if (t.includes(\u0027junior\u0027)||t.includes(\u0027jr.\u0027)||t.includes(\u0027jr \u0027)||t.includes(\u0027entry\u0027)||t.includes(\u0027graduate\u0027)||t.includes(\u0027trainee\u0027)||t.includes(\u0027intern\u0027)) return 1;\n  return 0;\n}\nconst candidateRank = levelRank(cv.experience_level);\n\nconst sumByIndex = {};\nfor (const s of summaries){ if (s \u0026\u0026 s.job_index != null) sumByIndex[s.job_index] = s.summary; }\nconst scoredByIndex = {};\nfor (const s of scored){ scoredByIndex[s.job_index] = s; }\n\nconst out = [];\njobs.forEach((job, i) =\u003e {\n  const idx = i + 1;\n  const sc = scoredByIndex[idx] || {};\n  const req = requirements[i] || {};\n\n  const jobRank = Math.max(levelRank(req.experience_level), levelRank(job.title));\n  const overqualified = candidateRank \u003e 0 \u0026\u0026 jobRank \u003e 0 \u0026\u0026 (candidateRank - jobRank \u003e= 2);\n  if (overqualified) return;\n\n  const matched = Array.isArray(sc.matched_skills) ? sc.matched_skills : [];\n  const missing = Array.isArray(sc.missing_skills) ? sc.missing_skills : [];\n  let summary = sumByIndex[idx];\n  if (!summary || !String(summary).trim()) {\n    summary = matched.length\n      ? \u0027Съвпадение по: \u0027 + matched.slice(0,3).join(\u0027, \u0027) + \u0027.\u0027\n      : \u0027Слабо съвпадение с изискванията.\u0027;\n  }\n\n  out.push({ json: {\n    title:            job.title || \u0027\u0027,\n    company:          job.company || \u0027\u0027,\n    url:              job.url || \u0027\u0027,\n    date_posted:      job.date_posted || \u0027\u0027,\n    location:         job.location || \u0027\u0027,\n    employment_type:  job.employment_type || \u0027\u0027,\n    description:      (job.description || \u0027\u0027).substring(0, 500),\n    score:            typeof sc.score === \u0027number\u0027 ? sc.score : 0,\n    matched_skills:   matched,\n    missing_skills:   missing,\n    experience_match: sc.experience_match === true,\n    main_stack:       Array.isArray(sc.main_stack) ? sc.main_stack : [],\n    main_alt:         sc.main_alt || \u0027\u0027,\n    summary:          summary,\n    source:           job.source || \u0027dev.bg\u0027\n  }});\n});\n\nreturn out;\n"
+                                     },
+                      "id":  "a63fc224-f1b0-4d36-8793-c8b011dd54b4",
+                      "name":  "Unpack Batch Results",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3648,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "fieldToSplitOut":  "output.jobs",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "847f7a52-92c0-463c-86ae-bfc2f7ced572",
+                      "name":  "Split Jobs for Fetch",
+                      "type":  "n8n-nodes-base.splitOut",
+                      "typeVersion":  1,
+                      "position":  [
+                                       2016,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://host.docker.internal:3002/v1/scrape",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Authorization",
+                                                                                         "value":  "Bearer local"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({url: $json.url, formats: [\u0027markdown\u0027], onlyMainContent: true, includeTags: [\u0027div.job_description\u0027]}) }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "5fbd750a-dc4f-4223-bb25-596cff099069",
+                      "name":  "Fetch Job Page",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.4,
+                      "position":  [
+                                       2192,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const httpItems = $input.all();\nconst splitItems = $(\u0027Split Jobs for Fetch\u0027).all();\n\nreturn httpItems.map((item, i) =\u003e {\n  const markdown = (item.json.data \u0026\u0026 item.json.data.markdown || \u0027\u0027).substring(0, 4000);\n  const originalJob = (splitItems[i] \u0026\u0026 splitItems[i].json) || {};\n\n  return { json: {\n    title: originalJob.title || \u0027\u0027,\n    company: originalJob.company || \u0027\u0027,\n    url: originalJob.url || \u0027\u0027,\n    date_posted: originalJob.date_posted || \u0027\u0027,\n    location: originalJob.location || \u0027\u0027,\n    employment_type: originalJob.employment_type || \u0027\u0027,\n    description: originalJob.description || \u0027\u0027,\n    full_description: markdown || originalJob.description || \u0027\u0027\n  }};\n});"
+                                     },
+                      "id":  "d5d1e9d5-671d-432f-bc69-b123b840f705",
+                      "name":  "Parse Job Description",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2368,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "aggregate":  "aggregateAllItemData",
+                                         "destinationFieldName":  "jobs",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "6253f2ca-52df-45a3-b507-fd359c953641",
+                      "name":  "Aggregate Fetched Jobs",
+                      "type":  "n8n-nodes-base.aggregate",
+                      "typeVersion":  1,
+                      "position":  [
+                                       2576,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "// Parses dev.bg listing pages into job objects AND paginates: for each category\u0027s page 1\n// (received as input) it reads the real last-page number from the FacetWP pager embedded in\n// the HTML, then fetches the remaining pages itself. Count-driven — no wasted requests.\n// Pagination is wrapped in try/catch so a failed page (or an environment without\n// this.helpers.httpRequest) degrades gracefully to whatever pages we already have.\nconst allItems = $input.all();\nconst builtUrls = $(\u0027Build dev.bg Target URL\u0027).all();\nconst allJobs = [];\nconst seenUrls = new Set();\nconst UA = \u0027Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\u0027;\nconst MAX_PAGES = 10;\n\nfunction decodeHtmlEntities(str) {\n  return str\n    .replace(/\u0026amp;/g, \u0027\u0026\u0027)\n    .replace(/\u0026lt;/g, \u0027\u003c\u0027)\n    .replace(/\u0026gt;/g, \u0027\u003e\u0027)\n    .replace(/\u0026quot;/g, \u0027\"\u0027)\n    .replace(/\u0026#039;/g, \"\u0027\")\n    .replace(/\u0026nbsp;/g, \u0027 \u0027)\n    .replace(/\u0026#(\\d+);/g, (_, code) =\u003e String.fromCharCode(parseInt(code)))\n    .replace(/\u0026#x([0-9a-fA-F]+);/g, (_, hex) =\u003e String.fromCharCode(parseInt(hex, 16)));\n}\n\nfunction convertBgDate(dateStr) {\n  const months = { \u0027яну\u0027: 1, \u0027фев\u0027: 2, \u0027мар\u0027: 3, \u0027апр\u0027: 4, \u0027май\u0027: 5, \u0027юни\u0027: 6, \u0027юли\u0027: 7, \u0027авг\u0027: 8, \u0027сеп\u0027: 9, \u0027окт\u0027: 10, \u0027ное\u0027: 11, \u0027дек\u0027: 12 };\n  const match = dateStr.match(/(\\d+)\\s+(\\S+)/);\n  if (!match) return new Date().toISOString().split(\u0027T\u0027)[0];\n  const day = parseInt(match[1]);\n  const monthKey = match[2].toLowerCase().substring(0, 3);\n  const month = months[monthKey] || (new Date().getMonth() + 1);\n  const year = new Date().getFullYear();\n  return `${year}-${String(month).padStart(2, \u00270\u0027)}-${String(day).padStart(2, \u00270\u0027)}`;\n}\n\nfunction parseJobsFromHtml(html) {\n  const jobs = [];\n  const blocks = html.split(\u0027\u003cdiv class=\"job-list-item\u0027);\n  blocks.shift();\n  for (const block of blocks) {\n    const urlMatch = block.match(/href=\"(https:\\/\\/dev\\.bg\\/company\\/jobads\\/[^\"]+)\"/);\n    if (!urlMatch) continue;\n    const url = urlMatch[1];\n    const titleMatch = block.match(/class=\"job-title[^\"]*\"[^\u003e]*\u003e\\s*([^\u003c]+?)\\s*\u003c\\/h6\u003e/);\n    const title = titleMatch ? decodeHtmlEntities(titleMatch[1].trim()) : \u0027\u0027;\n    if (!title) continue;\n    const companyMatch = block.match(/class=\"company-name[^\"]*\"[^\u003e]*\u003e\\s*([^\u003c]+?)\\s*\u003c\\/span\u003e/);\n    const company = companyMatch ? decodeHtmlEntities(companyMatch[1].trim()) : \u0027\u0027;\n    const dateMatch = block.match(/class=\"date[^\"]*\"[^\u003e]*\u003e\\s*([^\u003c]+?)\\s*\u003c\\/span\u003e/);\n    const dateRaw = dateMatch ? dateMatch[1].trim() : \u0027\u0027;\n    const date_posted = convertBgDate(dateRaw);\n    const isRemote = /class=\"badge[^\"]*remote[^\"]*\"/.test(block);\n    const isHybrid = /class=\"badge[^\"]*hybrid[^\"]*\"/.test(block);\n    let location = \u0027Bulgaria\u0027;\n    if (isRemote) location = \u0027Remote\u0027;\n    else if (isHybrid) location = \u0027Hybrid\u0027;\n    const techMatches = [...block.matchAll(/\u003cimg[^\u003e]+title=\"([^\"]+)\"[^\u003e]*\u003e/g)];\n    const techStack = [...new Set(techMatches.map(m =\u003e m[1]).filter(t =\u003e t \u0026\u0026 !t.toLowerCase().includes(\u0027icon\u0027) \u0026\u0026 t.length \u003e 1))];\n    jobs.push({\n      title, company, url, date_posted, location,\n      employment_type: \u0027Full-time\u0027,\n      description: techStack.length \u003e 0 ? \u0027Tech stack: \u0027 + techStack.join(\u0027, \u0027) : \u0027\u0027,\n      source: \u0027dev.bg\u0027\n    });\n  }\n  return jobs;\n}\n\nfunction lastPageOf(html) {\n  const clean = String(html).replace(/\\\\\"/g, \u0027\"\u0027);\n  let max = 1;\n  const re = /data-page=\"(\\d+)\"/g;\n  let m;\n  while ((m = re.exec(clean)) !== null) { const n = parseInt(m[1], 10); if (n \u003e max) max = n; }\n  return max;\n}\n\nfunction addJobs(html) {\n  for (const job of parseJobsFromHtml(html)) {\n    if (!seenUrls.has(job.url)) { seenUrls.add(job.url); allJobs.push(job); }\n  }\n}\n\nfor (let i = 0; i \u003c allItems.length; i++) {\n  const html = allItems[i].json.data || \u0027\u0027;\n  if (!html) continue;\n  addJobs(html);\n\n  const baseUrl = (builtUrls[i] \u0026\u0026 builtUrls[i].json \u0026\u0026 builtUrls[i].json.scrape_url) || \u0027\u0027;\n  if (!baseUrl) continue;\n\n  const lastPage = Math.min(lastPageOf(html), MAX_PAGES);\n  for (let p = 2; p \u003c= lastPage; p++) {\n    const pageUrl = baseUrl + (baseUrl.includes(\u0027?\u0027) ? \u0027\u0026\u0027 : \u0027?\u0027) + \u0027_paged=\u0027 + p;\n    try {\n      const resp = await this.helpers.httpRequest({ url: pageUrl, method: \u0027GET\u0027, headers: { \u0027User-Agent\u0027: UA }, json: false, timeout: 20000 });\n      const pageHtml = typeof resp === \u0027string\u0027 ? resp : ((resp \u0026\u0026 resp.body) || \u0027\u0027);\n      if (pageHtml) addJobs(pageHtml);\n    } catch (e) {\n      // transient page error or no http helper — keep what we have and move on\n    }\n  }\n}\n\nreturn [{ json: { output: { jobs: allJobs } } }];\n"
+                                     },
+                      "id":  "d9fc9ba9-ea79-4b5e-97f6-ef429d81cb26",
+                      "name":  "Parse \u0026 Merge Categories",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1312,
+                                       112
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "// Language-first pre-filter: only fetch + AI-analyse listings that share a PROGRAMMING\n// LANGUAGE or FRAMEWORK with the candidate. Shared infra/tools (Docker, SQL, AWS, Git,\n// Linux) does NOT qualify a job — those are ubiquitous and not decisive. This keeps the\n// expensive DeepSeek calls focused on listings in the candidate\u0027s actual stack.\nconst item = $input.first();\nconst jobs = item.json.output?.jobs || [];\nconst cv = $(\u0027Build dev.bg Target URL\u0027).first().json.cv_profile || {};\n\nconst ALIASES = {\u0027js\u0027:\u0027javascript\u0027,\u0027ts\u0027:\u0027typescript\u0027,\u0027postgres\u0027:\u0027postgresql\u0027,\u0027node\u0027:\u0027node.js\u0027,\u0027nodejs\u0027:\u0027node.js\u0027,\u0027k8s\u0027:\u0027kubernetes\u0027,\u0027golang\u0027:\u0027go\u0027,\u0027reactjs\u0027:\u0027react\u0027,\u0027react.js\u0027:\u0027react\u0027,\u0027vuejs\u0027:\u0027vue.js\u0027,\u0027vue\u0027:\u0027vue.js\u0027,\u0027css3\u0027:\u0027css\u0027,\u0027html5\u0027:\u0027html\u0027,\u0027dotnet\u0027:\u0027.net\u0027,\u0027.net core\u0027:\u0027.net\u0027,\u0027spring framework\u0027:\u0027spring\u0027,\u0027springboot\u0027:\u0027spring boot\u0027};\nconst norm = s =\u003e { const t = (s || \u0027\u0027).toLowerCase().trim(); return ALIASES[t] || t; };\n\n// Decisive set = candidate\u0027s languages + frameworks (NOT skills/tools/databases).\nconst core = new Set([...(cv.programming_languages || []), ...(cv.frameworks || [])].map(norm));\n\n// Per-language ecosystem boosters: a tag that strongly implies one of the candidate\u0027s\n// languages also qualifies a job (handles dev.bg\u0027s inconsistent tagging, e.g. a Java job\n// tagged only \"Maven/Hibernate\"). Deliberately NO frontend expansion for JS/TS so a\n// backend candidate is not pulled into React/Angular-only roles.\nconst ECOSYSTEM = {\n  \u0027java\u0027:   [\u0027spring\u0027,\u0027spring boot\u0027,\u0027spring data\u0027,\u0027spring webflux\u0027,\u0027hibernate\u0027,\u0027jpa\u0027,\u0027maven\u0027,\u0027gradle\u0027,\u0027quarkus\u0027,\u0027micronaut\u0027,\u0027junit\u0027],\n  \u0027kotlin\u0027: [\u0027spring\u0027,\u0027spring boot\u0027,\u0027ktor\u0027,\u0027gradle\u0027,\u0027maven\u0027],\n  \u0027python\u0027: [\u0027django\u0027,\u0027flask\u0027,\u0027fastapi\u0027,\u0027pandas\u0027,\u0027numpy\u0027,\u0027pytest\u0027,\u0027poetry\u0027],\n  \u0027c#\u0027:     [\u0027.net\u0027,\u0027asp.net\u0027,\u0027asp.net core\u0027,\u0027blazor\u0027,\u0027entity framework\u0027],\n  \u0027php\u0027:    [\u0027laravel\u0027,\u0027symfony\u0027,\u0027yii\u0027],\n  \u0027go\u0027:     [\u0027gin\u0027,\u0027echo\u0027,\u0027fiber\u0027],\n  \u0027ruby\u0027:   [\u0027rails\u0027,\u0027ruby on rails\u0027]\n};\nfor (const lang of [...core]) { (ECOSYSTEM[lang] || []).forEach(x =\u003e core.add(norm(x))); }\n\nfunction tagsOf(job){\n  if (Array.isArray(job.tech_tags) \u0026\u0026 job.tech_tags.length) return job.tech_tags;\n  return String(job.description || \u0027\u0027).replace(\u0027Tech stack:\u0027, \u0027\u0027).split(\u0027,\u0027);\n}\nfunction langMatch(job){\n  for (const raw of tagsOf(job)) { if (core.has(norm(String(raw).trim()))) return true; }\n  return false;\n}\n// secondary signal for the safety fallback: any tag overlap with the full CV stack\nconst cvAll = new Set([...(cv.skills||[]), ...(cv.programming_languages||[]), ...(cv.frameworks||[]), ...(cv.tools||[])].map(norm));\nfunction anyOverlap(job){\n  for (const raw of tagsOf(job)) { if (cvAll.has(norm(String(raw).trim()))) return true; }\n  return false;\n}\n\nconst MAX_JOBS = 15;\nlet kept = jobs.filter(langMatch);\n// Safety net: if dev.bg\u0027s tagging is too sparse and almost nothing matches by language,\n// fall back to the looser \"any stack overlap\" filter so we never return an empty result.\nif (kept.length \u003c 2) kept = jobs.filter(anyOverlap);\nif (kept.length === 0) kept = jobs;\nkept = kept.slice(0, MAX_JOBS);\n\nreturn [{ json: { output: { jobs: kept } } }];\n"
+                                     },
+                      "id":  "55732e10-0b56-4123-b82d-b873130b68d5",
+                      "name":  "Keyword Pre-Score",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1648,
+                                       112
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "text":  "={{ $json.jobs_text }}",
+                                         "schemaType":  "fromJson",
+                                         "jsonSchemaExample":  "{\"requirements\": [{\"job_index\": 0, \"required_tech\": [\"React\", \"Node.js\"], \"preferred_tech\": [\"GraphQL\"], \"accepts_alternatives_for\": [\"React\"], \"experience_years_min\": 5, \"experience_level\": \"Senior\", \"methodologies\": [\"Agile\"], \"human_languages\": [\"English\"]}]}",
+                                         "options":  {
+                                                         "systemPromptTemplate":  "You are a precise requirements analyst. For each job listing in the input, read it in full — responsibilities, requirements, and any \"nice to have\" / \"advantages\" sections — and extract only what is explicitly written. Do not infer or add anything.\n\nWHAT COUNTS AS A TECHNOLOGY (for required_tech / preferred_tech): ONLY named, recognizable technologies — programming languages, frameworks, libraries, databases, cloud platforms, tools and infrastructure (e.g. Java, Kotlin, Spring, Spring Boot, React, Node.js, PostgreSQL, MySQL, Docker, Kubernetes, AWS, Azure, Kafka, Git, Terraform, GraphQL, REST).\n\nDO NOT extract these — leave them out entirely:\n- General concepts, practices or activities — e.g. microservices, event sourcing, distributed systems, monitoring, alerting, logging, reporting, schema design, clean architecture, OOP, SOLID, design patterns, scalability, performance, security, data structures.\n- Domain or business terms — e.g. payments, settlement, reconciliation, FX, stablecoins, blockchain, marketing, CRM, internal reporting.\n- Sub-features of a technology — extract the technology itself, not its features (e.g. \"Kotlin\", not \"coroutines\"; \"AWS\", not \"Lambda\" / \"ECS\" / \"DynamoDB\", unless that specific product is itself the core requirement).\n- Soft skills, responsibilities and vague phrases.\nVery rarely, include a highly specific named requirement only if it is clearly a concrete tool/standard.\n\nFields per job:\n- required_tech — technologies presented as required / must-have.\n- preferred_tech — optional technologies. RULE: anything under a section phrased as \"nice to have\", \"advantages\", \"a plus\", \"will be considered a plus\", \"bonus\" or \"good to have\" ALWAYS goes here. Never skip these sections.\n- experience_years_min — minimum years as a number (0 if not stated).\n- experience_level — Junior, Mid, Senior or Lead.\n- methodologies — only Agile, Scrum, Kanban or Waterfall.\n- human_languages — e.g. English.\n- accepts_alternatives_for — see the alternatives rule below.\n\nAlternatives rule: when ONE requirement can be satisfied by any of several technologies (e.g. \"Rust, or strong background in TypeScript, Go, Java or Kotlin\", \"React/Angular/Vue\", \"X or similar / or equivalent\"), put the primary technology in required_tech AND list EVERY acceptable technology (including the primary) in accepts_alternatives_for. If the job states no alternatives, leave accepts_alternatives_for empty.\n\nNormalize every technology to its common canonical name (e.g. ReactJS / React.js → React, NodeJS → Node.js, postgres → PostgreSQL, k8s → Kubernetes).\n\nReturn exactly one entry in \"requirements\" per job, in the same order as the input. If a section lists no real technologies, return empty arrays — do not invent or pad."
+                                                     }
+                                     },
+                      "id":  "f6ae9e25-79fb-4dfc-9359-b32c85a97a32",
+                      "name":  "Extract Job Requirements",
+                      "type":  "@n8n/n8n-nodes-langchain.informationExtractor",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       2928,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const jobs = $(\u0027Prepare Batch Input\u0027).first().json.jobs || [];\nconst cv = $(\u0027Prepare Batch Input\u0027).first().json.cv_profile;\nconst requirements = $input.first().json.output.requirements || [];\n\nconst cvAllTech = [...(cv.skills||[]), ...(cv.programming_languages||[]), ...(cv.frameworks||[]), ...(cv.tools||[])];\nconst cvAllTechLower = cvAllTech.map(s =\u003e s.toLowerCase().trim());\nconst hasTech = (n) =\u003e cvAllTechLower.some(t =\u003e t.includes(n));\n\nconst years = cv.years_of_experience || 0;\nconst level = (cv.experience_level || \u0027\u0027).toLowerCase();\nconst jobType = (cv.job_type || \u0027\u0027).toLowerCase();\nconst isMidPlus = [\u0027mid\u0027,\u0027senior\u0027,\u0027lead\u0027].includes(level) || years \u003e= 3;\nconst hasAnyDb = [\u0027postgresql\u0027,\u0027postgres\u0027,\u0027mysql\u0027,\u0027mariadb\u0027,\u0027oracle\u0027,\u0027sql server\u0027,\u0027mssql\u0027,\u0027sqlite\u0027,\u0027rds\u0027].some(db =\u003e hasTech(db));\n\nconst IMPLIED = [\n  { s: \u0027Git\u0027,    w: () =\u003e isMidPlus },\n  { s: \u0027GitHub\u0027, w: () =\u003e isMidPlus },\n  { s: \u0027Maven\u0027,  w: () =\u003e hasTech(\u0027spring\u0027) },\n  { s: \u0027SQL\u0027,    w: () =\u003e [\u0027backend\u0027,\u0027fullstack\u0027,\u0027full-stack\u0027,\u0027data\u0027].includes(jobType) || hasAnyDb }\n];\nconst impliedSkills = [];\nfor (const r of IMPLIED) { if (r.w() \u0026\u0026 !cvAllTechLower.includes(r.s.toLowerCase())) impliedSkills.push(r.s); }\n\nconst LINEAGE = [\n  { w: () =\u003e hasTech(\u0027typescript\u0027) || hasTech(\u0027node\u0027), a: \u0027JavaScript\u0027, src: () =\u003e hasTech(\u0027typescript\u0027) ? \u0027TypeScript\u0027 : \u0027Node.js\u0027 },\n  { w: () =\u003e hasTech(\u0027scss\u0027) || hasTech(\u0027sass\u0027),       a: \u0027CSS\u0027,        src: () =\u003e hasTech(\u0027scss\u0027) ? \u0027SCSS\u0027 : \u0027SASS\u0027 },\n  { w: () =\u003e hasTech(\u0027spring\u0027),                        a: \u0027Spring\u0027,     src: () =\u003e \u0027Spring\u0027 }\n];\nconst lineageSkills = [];\nconst derivedFrom = {};\nfor (const r of LINEAGE) { const al = r.a.toLowerCase(); if (r.w() \u0026\u0026 !cvAllTechLower.includes(al) \u0026\u0026 !lineageSkills.map(x=\u003ex.toLowerCase()).includes(al)) { lineageSkills.push(r.a); derivedFrom[al] = r.src(); } }\n\nconst candidateSkills = [...cvAllTech, ...impliedSkills, ...lineageSkills];\n\nconst AWS_SERVICES = [\u0027ec2\u0027,\u0027rds\u0027,\u0027s3\u0027,\u0027lambda\u0027,\u0027ecs\u0027,\u0027eks\u0027,\u0027dynamodb\u0027,\u0027cloudwatch\u0027,\u0027codedeploy\u0027,\u0027cloudformation\u0027,\u0027sqs\u0027,\u0027sns\u0027,\u0027cloudfront\u0027,\u0027elasticache\u0027,\u0027redshift\u0027,\u0027kinesis\u0027,\u0027fargate\u0027,\u0027opensearch\u0027];\nconst CLOUD = [\n  { term: \u0027AWS\u0027,   prov: \u0027aws\u0027,   svc: AWS_SERVICES },\n  { term: \u0027Azure\u0027, prov: \u0027azure\u0027, svc: [] },\n  { term: \u0027GCP\u0027,   prov: \u0027gcp\u0027,   svc: [\u0027google cloud\u0027,\u0027bigquery\u0027,\u0027gke\u0027] }\n];\nfor (const c of CLOUD) {\n  if (cvAllTechLower.includes(c.term.toLowerCase())) continue;\n  const has = candidateSkills.some(s =\u003e {\n    const sl = s.toLowerCase().trim();\n    return sl === c.prov || sl.includes(c.prov) || c.svc.includes(sl);\n  });\n  if (has) candidateSkills.push(c.term);\n}\n\nconst spokenLangs = cv.spoken_languages || [];\n\nconst ALIASES = {\u0027js\u0027:\u0027javascript\u0027,\u0027ecmascript\u0027:\u0027javascript\u0027,\u0027ts\u0027:\u0027typescript\u0027,\u0027postgres\u0027:\u0027postgresql\u0027,\u0027postgre\u0027:\u0027postgresql\u0027,\u0027node\u0027:\u0027node.js\u0027,\u0027nodejs\u0027:\u0027node.js\u0027,\u0027k8s\u0027:\u0027kubernetes\u0027,\u0027csharp\u0027:\u0027c#\u0027,\u0027golang\u0027:\u0027go\u0027,\u0027reactjs\u0027:\u0027react\u0027,\u0027react.js\u0027:\u0027react\u0027,\u0027vuejs\u0027:\u0027vue.js\u0027,\u0027vue\u0027:\u0027vue.js\u0027,\u0027css3\u0027:\u0027css\u0027,\u0027html5\u0027:\u0027html\u0027,\u0027dotnet\u0027:\u0027.net\u0027,\u0027.net core\u0027:\u0027.net\u0027,\u0027.net 8\u0027:\u0027.net\u0027,\u0027.net framework\u0027:\u0027.net\u0027,\u0027rest\u0027:\u0027rest apis\u0027,\u0027rest api\u0027:\u0027rest apis\u0027,\u0027restful apis\u0027:\u0027rest apis\u0027,\u0027restful api\u0027:\u0027rest apis\u0027};\nfunction norm(s){ const t = (s||\u0027\u0027).toLowerCase().trim(); return ALIASES[t] || t; }\nconst candidateNorm = candidateSkills.map(norm);\nconst candidateSet = new Set(candidateNorm);\nfunction langCovered(jobLang){ const jl = norm(jobLang); return spokenLangs.some(sl =\u003e norm(sl).includes(jl)); }\n\nconst primarySet = new Set((cv.primary_languages || []).map(norm));\nconst SECONDARY_LANG_CREDIT = 0.4;\n\nfunction skillBase(s){ return norm(String(s).split(\u0027 (\u0027)[0]); }\nfunction dedupSkills(arr){\n  const byBase = new Map();\n  for (const s of arr){\n    const str = String(s);\n    const annotated = str.includes(\u0027 (\u0027);\n    const base = skillBase(str);\n    if (!byBase.has(base)) { byBase.set(base, s); }\n    else { const ex = String(byBase.get(base)); if (ex.includes(\u0027 (\u0027) \u0026\u0026 !annotated) byBase.set(base, s); }\n  }\n  return [...byBase.values()];\n}\n\nconst FOUNDATIONAL = new Set([\u0027git\u0027,\u0027github\u0027,\u0027gitlab\u0027,\u0027bitbucket\u0027,\u0027agile\u0027,\u0027scrum\u0027,\u0027kanban\u0027,\u0027jira\u0027,\u0027confluence\u0027].map(norm));\nconst HUMAN_LANGS = new Set([\u0027english\u0027,\u0027bulgarian\u0027,\u0027german\u0027,\u0027french\u0027,\u0027spanish\u0027,\u0027russian\u0027,\u0027italian\u0027,\u0027dutch\u0027,\u0027portuguese\u0027,\u0027polish\u0027,\u0027romanian\u0027,\u0027greek\u0027,\u0027turkish\u0027,\u0027ukrainian\u0027,\u0027czech\u0027,\u0027hungarian\u0027,\u0027croatian\u0027,\u0027serbian\u0027,\u0027arabic\u0027,\u0027chinese\u0027,\u0027japanese\u0027].map(norm));\nconst LANGUAGES = new Set([\u0027java\u0027,\u0027kotlin\u0027,\u0027go\u0027,\u0027python\u0027,\u0027c#\u0027,\u0027javascript\u0027,\u0027typescript\u0027,\u0027php\u0027,\u0027ruby\u0027,\u0027c++\u0027,\u0027c\u0027,\u0027rust\u0027,\u0027scala\u0027,\u0027swift\u0027,\u0027objective-c\u0027,\u0027perl\u0027,\u0027dart\u0027,\u0027elixir\u0027,\u0027clojure\u0027,\u0027groovy\u0027,\u0027f#\u0027,\u0027vb.net\u0027,\u0027lua\u0027,\u0027haskell\u0027,\u0027julia\u0027].map(norm));\nconst FRONTEND_FRAMEWORKS = new Set([\u0027react\u0027,\u0027angular\u0027,\u0027angularjs\u0027,\u0027vue.js\u0027,\u0027svelte\u0027,\u0027next.js\u0027,\u0027nuxt\u0027].map(norm));\nconst isFrontendCandidate = [\u0027frontend\u0027,\u0027fullstack\u0027,\u0027full-stack\u0027].includes(jobType);\nconst techWeight = (t) =\u003e {\n  const n = norm(t);\n  if (LANGUAGES.has(n)) return 3;\n  if (isFrontendCandidate \u0026\u0026 FRONTEND_FRAMEWORKS.has(n)) return 2;\n  return 1;\n};\n\nconst MAIN_DISPLAY = {\u0027java\u0027:\u0027Java\u0027,\u0027kotlin\u0027:\u0027Kotlin\u0027,\u0027go\u0027:\u0027Go\u0027,\u0027python\u0027:\u0027Python\u0027,\u0027c#\u0027:\u0027C#\u0027,\u0027javascript\u0027:\u0027JavaScript\u0027,\u0027typescript\u0027:\u0027TypeScript\u0027,\u0027php\u0027:\u0027PHP\u0027,\u0027ruby\u0027:\u0027Ruby\u0027,\u0027c++\u0027:\u0027C++\u0027,\u0027rust\u0027:\u0027Rust\u0027,\u0027scala\u0027:\u0027Scala\u0027,\u0027swift\u0027:\u0027Swift\u0027,\u0027.net\u0027:\u0027.NET\u0027,\u0027node.js\u0027:\u0027Node.js\u0027,\u0027react\u0027:\u0027React\u0027,\u0027angular\u0027:\u0027Angular\u0027,\u0027vue.js\u0027:\u0027Vue.js\u0027,\u0027spring\u0027:\u0027Spring\u0027,\u0027django\u0027:\u0027Django\u0027,\u0027laravel\u0027:\u0027Laravel\u0027,\u0027blazor\u0027:\u0027Blazor\u0027,\u0027dart\u0027:\u0027Dart\u0027,\u0027elixir\u0027:\u0027Elixir\u0027};\nconst MAIN_KNOWN = new Set(Object.keys(MAIN_DISPLAY));\nconst MAIN_LANG_SET = new Set([\u0027java\u0027,\u0027kotlin\u0027,\u0027go\u0027,\u0027python\u0027,\u0027c#\u0027,\u0027javascript\u0027,\u0027typescript\u0027,\u0027php\u0027,\u0027ruby\u0027,\u0027c++\u0027,\u0027rust\u0027,\u0027scala\u0027,\u0027swift\u0027,\u0027.net\u0027,\u0027dart\u0027,\u0027elixir\u0027]);\nconst FRONTEND_FW = new Set([\u0027react\u0027,\u0027angular\u0027,\u0027vue.js\u0027,\u0027svelte\u0027].map(norm));\nconst BACKEND_MS = new Set([\u0027java\u0027,\u0027kotlin\u0027,\u0027go\u0027,\u0027python\u0027,\u0027c#\u0027,\u0027php\u0027,\u0027ruby\u0027,\u0027rust\u0027,\u0027scala\u0027,\u0027.net\u0027,\u0027node.js\u0027,\u0027elixir\u0027,\u0027c++\u0027].map(norm));\nfunction detectMainStack(title, description){\n  const titleTokens = []; const tseen = new Set();\n  for (const tok of String(title || \u0027\u0027).toLowerCase().split(/[^a-z0-9+#.]+/).filter(Boolean)){\n    const n = norm(tok); if (MAIN_KNOWN.has(n) \u0026\u0026 !tseen.has(n)){ tseen.add(n); titleTokens.push(n); }\n  }\n  const tLower = String(title || \u0027\u0027).toLowerCase();\n  const roleFull  = /full[ \\-]?stack/.test(tLower);\n  const roleFront = /front[ \\-]?end/.test(tLower);\n  const roleBack  = /back[ \\-]?end/.test(tLower);\n  const iconTags = String(description || \u0027\u0027).replace(\u0027Tech stack:\u0027, \u0027\u0027).split(\u0027,\u0027).map(s =\u003e norm(s.trim())).filter(Boolean);\n  const pick = (set) =\u003e {\n    const fromTitle = titleTokens.find(t =\u003e set.has(t));\n    if (fromTitle) return fromTitle;\n    const inIcons = iconTags.filter(t =\u003e set.has(t));\n    return inIcons.length === 1 ? inIcons[0] : null;\n  };\n  const backend = pick(BACKEND_MS);\n  const frontend = pick(FRONTEND_FW);\n  let out;\n  if (roleFront)               out = [frontend || backend];\n  else if (roleBack)           out = [backend];\n  else if (roleFull)           out = [backend, frontend];\n  else if (titleTokens.length) out = titleTokens.slice(0, 2);\n  else                         out = [backend, frontend];\n  const seen = new Set(); const res = [];\n  for (const t of out){ if (t \u0026\u0026 !seen.has(t)){ seen.add(t); res.push(t); } }\n  return res.slice(0, 2);\n}\n\nconst COMPARABLE_PAIRS = [\n  [\u0027Angular\u0027,\u0027React\u0027,\u0027Vue.js\u0027],\n  [\u0027Angular\u0027,\u0027AngularJS\u0027],\n  [\u0027Express\u0027,\u0027NestJS\u0027,\u0027Koa\u0027,\u0027Fastify\u0027],\n  [\u0027Django\u0027,\u0027FastAPI\u0027,\u0027Flask\u0027],\n  [\u0027Spring Boot\u0027,\u0027Quarkus\u0027,\u0027Micronaut\u0027],\n  [\u0027PostgreSQL\u0027,\u0027MySQL\u0027,\u0027MariaDB\u0027,\u0027Oracle\u0027,\u0027SQL Server\u0027,\u0027SQL\u0027],\n  [\u0027Hibernate\u0027,\u0027JPA\u0027,\u0027Spring Data\u0027],\n  [\u0027SCSS\u0027,\u0027SASS\u0027,\u0027Less\u0027],\n  [\u0027Jest\u0027,\u0027Mocha\u0027,\u0027Jasmine\u0027,\u0027Vitest\u0027],\n  [\u0027Cypress\u0027,\u0027Playwright\u0027,\u0027Selenium\u0027,\u0027WebdriverIO\u0027]\n];\nconst ALWAYS_COMPARABLE = new Set([\u0027PostgreSQL\u0027,\u0027MySQL\u0027,\u0027MariaDB\u0027,\u0027Oracle\u0027,\u0027SQL Server\u0027,\u0027SQL\u0027,\u0027AngularJS\u0027].map(norm));\nconst VERSION_LINEAGE = [[\u0027angular\u0027,\u0027angularjs\u0027]];\nfunction isLineage(a, b){ return VERSION_LINEAGE.some(p =\u003e p.includes(a) \u0026\u0026 p.includes(b) \u0026\u0026 a !== b); }\nfunction findComparable(reqTech, allowedNorm){\n  const rn = norm(reqTech);\n  if (!ALWAYS_COMPARABLE.has(rn) \u0026\u0026 !allowedNorm.includes(rn)) return null;\n  for (const pair of COMPARABLE_PAIRS){\n    const pl = pair.map(norm);\n    if (!pl.includes(rn)) continue;\n    for (let i=0;i\u003cpair.length;i++){\n      if (pl[i]===rn) continue;\n      if (candidateSet.has(pl[i])){\n        const idx = candidateNorm.indexOf(pl[i]);\n        const cvTech = idx!==-1 ? candidateSkills[idx] : pair[i];\n        if (isLineage(rn, pl[i])) return `${reqTech} (имаш познания от ${cvTech})`;\n        return `${cvTech} (алтернатива на ${reqTech})`;\n      }\n    }\n  }\n  return null;\n}\n\nfunction levelRank(s){\n  const t = \u0027 \u0027 + (s||\u0027\u0027).toLowerCase() + \u0027 \u0027;\n  if (t.includes(\u0027lead\u0027)||t.includes(\u0027principal\u0027)||t.includes(\u0027staff\u0027)||t.includes(\u0027chief\u0027)||t.includes(\u0027architect\u0027)||t.includes(\u0027head of\u0027)) return 4;\n  if (t.includes(\u0027senior\u0027)||t.includes(\u0027sr.\u0027)||t.includes(\u0027sr \u0027)) return 3;\n  if (t.includes(\u0027middle\u0027)||t.includes(\u0027mid-\u0027)||t.includes(\u0027mid \u0027)||t.includes(\u0027intermediate\u0027)||t.includes(\u0027regular\u0027)) return 2;\n  if (t.includes(\u0027junior\u0027)||t.includes(\u0027jr.\u0027)||t.includes(\u0027jr \u0027)||t.includes(\u0027entry\u0027)||t.includes(\u0027graduate\u0027)||t.includes(\u0027trainee\u0027)||t.includes(\u0027intern\u0027)) return 1;\n  return 0;\n}\nconst candRank = levelRank(cv.experience_level);\nconst SHOW_THRESHOLD = 30;\n\nconst scored = requirements.map((req, i) =\u003e {\n  const allowedNorm = (req.accepts_alternatives_for || []).map(norm);\n  const matched = [];\n  const missing = [];\n\n  function coverTech(t){\n    const nt = norm(t);\n    if (candidateSet.has(nt)) {\n      if (LANGUAGES.has(nt) \u0026\u0026 primarySet.size \u003e 0 \u0026\u0026 !primarySet.has(nt)) {\n        const src = derivedFrom[nt];\n        matched.push(src ? `${t} (имаш познания от ${src})` : `${t} (имаш познания)`);\n        return SECONDARY_LANG_CREDIT;\n      }\n      matched.push(t);\n      return 1;\n    }\n    const comp = findComparable(t, allowedNorm);\n    if (comp) { matched.push(comp); return 0.5; }\n    missing.push(t);\n    return 0;\n  }\n\n  const prefTech = req.preferred_tech || [];\n  const methods = req.methodologies || [];\n  const langs = req.human_languages || [];\n\n  const jobTags = String((jobs[i] || {}).description || \u0027\u0027).replace(\u0027Tech stack:\u0027, \u0027\u0027).split(\u0027,\u0027).map(s =\u003e s.trim()).filter(Boolean);\n  const knownNorm = new Set([...(req.required_tech || []), ...prefTech].map(norm));\n  const reqTech = [...(req.required_tech || [])];\n  for (const tag of jobTags) {\n    const tn = norm(tag);\n    if (!tn || knownNorm.has(tn) || HUMAN_LANGS.has(tn)) continue;\n    if ([...knownNorm].some(k =\u003e isLineage(tn, k))) continue;\n    knownNorm.add(tn); reqTech.push(tag);\n  }\n\n  for (const alt of (req.accepts_alternatives_for || [])) {\n    const an = norm(alt);\n    if (an \u0026\u0026 !knownNorm.has(an) \u0026\u0026 candidateSet.has(an)) { knownNorm.add(an); reqTech.push(alt); }\n  }\n\n  let aCovW = 0, aTotW = 0, coreCovW = 0, coreTotW = 0;\n  for (const t of reqTech){\n    const w = techWeight(t);\n    const c = coverTech(t);\n    aCovW += c * w; aTotW += w;\n    if (!FOUNDATIONAL.has(norm(t))) { coreTotW += w; coreCovW += c * w; }\n  }\n  const aScore = (aTotW ? aCovW/aTotW : 1) * 0.60;\n  const coreCoverage = coreTotW ? coreCovW/coreTotW : 1;\n\n  let bCov = 0; for (const t of prefTech) bCov += coverTech(t);\n  const bScore = (prefTech.length ? bCov/prefTech.length : 1) * 0.10;\n\n  const jobRank = Math.max(levelRank(req.experience_level), levelRank((jobs[i]||{}).title));\n  const meetsLevel = (candRank===0 || jobRank===0 || candRank\u003e=jobRank);\n  const meetsYears = years \u003e= (req.experience_years_min||0);\n  const expMatch = meetsLevel \u0026\u0026 meetsYears;\n  const expGrade = expMatch ? 1 : ((meetsLevel || meetsYears) ? 0.6 : 0.2);\n  const expScore = expGrade * 0.20;\n\n  let mlItems = 0, mlCov = 0;\n  for (const m of methods){ mlItems++; if (candidateSet.has(norm(m))){ mlCov++; matched.push(m); } else missing.push(m); }\n  for (const l of langs){ mlItems++; if (langCovered(l)){ mlCov++; matched.push(l); } else missing.push(l); }\n  const mlScore = (mlItems ? mlCov/mlItems : 1) * 0.10;\n\n  const mainStackNorm = detectMainStack((jobs[i] || {}).title, (jobs[i] || {}).description);\n  const mainLangs = mainStackNorm.filter(m =\u003e MAIN_LANG_SET.has(m));\n  const decisive = mainLangs.length ? mainLangs : mainStackNorm;\n  function coverMain(m){\n    if (candidateSet.has(m)){\n      if (LANGUAGES.has(m) \u0026\u0026 primarySet.size \u003e 0 \u0026\u0026 !primarySet.has(m)) return \u0027weak\u0027;\n      return \u0027strong\u0027;\n    }\n    if (allowedNorm.includes(m)){\n      if ([...primarySet].some(p =\u003e allowedNorm.includes(p))) return \u0027strong\u0027;\n      if (allowedNorm.some(a =\u003e candidateSet.has(a))) return \u0027weak\u0027;\n    }\n    return \u0027none\u0027;\n  }\n  let mainFactor = 1;\n  if (decisive.length){\n    const covs = decisive.map(coverMain);\n    mainFactor = covs.includes(\u0027strong\u0027) ? 1 : (covs.includes(\u0027weak\u0027) ? 0.85 : 0.55);\n  }\n  let main_alt = \u0027\u0027;\n  for (const m of decisive){\n    if (!candidateSet.has(m) \u0026\u0026 allowedNorm.includes(m)){\n      const p = [...primarySet].find(x =\u003e allowedNorm.includes(x));\n      if (p){ const idx = candidateNorm.indexOf(p); const have = idx !== -1 ? candidateSkills[idx] : p; main_alt = `${have} (приема се вместо ${MAIN_DISPLAY[m] || m})`; break; }\n    }\n  }\n  const main_stack = mainStackNorm.map(m =\u003e MAIN_DISPLAY[m] || m);\n\n  const raw = (aScore + bScore + expScore + mlScore) * 100;\n  const coreFactor = coreTotW === 0 ? 1 : Math.min(1, 0.3 + 1.4 * coreCoverage);\n  let score = Math.round(raw * coreFactor * mainFactor);\n  if (!expMatch) score = Math.max(0, score - 5);\n\n  const overqualified = candRank\u003e0 \u0026\u0026 jobRank\u003e0 \u0026\u0026 (candRank - jobRank \u003e= 2);\n  const matchedFinal = dedupSkills(matched);\n  const matchedBases = new Set(matchedFinal.map(skillBase));\n  const missingFinal = dedupSkills(missing).filter(m =\u003e !matchedBases.has(skillBase(m)));\n  return { job_index: i+1, score, matched_skills: matchedFinal, missing_skills: missingFinal, experience_match: expMatch, main_stack, main_alt, _overq: overqualified };\n});\n\nconst toSummarize = scored.filter(s =\u003e s.score \u003e= SHOW_THRESHOLD \u0026\u0026 !s._overq);\nconst summary_text = toSummarize.map(s =\u003e {\n  const job = jobs[s.job_index - 1] || {};\n  return \u0027JOB \u0027 + s.job_index + \u0027: \u0027 + (job.title||\u0027\u0027) + \u0027 @ \u0027 + (job.company||\u0027\u0027) + \u0027\\n\u0027 +\n    \u0027Score: \u0027 + s.score + \u0027%\\n\u0027 +\n    \u0027Matched: \u0027 + (s.matched_skills.join(\u0027, \u0027) || \u0027none\u0027) + \u0027\\n\u0027 +\n    \u0027Missing: \u0027 + (s.missing_skills.join(\u0027, \u0027) || \u0027none\u0027) + \u0027\\n\u0027 +\n    \u0027Experience match: \u0027 + (s.experience_match ? \u0027yes\u0027 : \u0027no\u0027);\n}).join(\u0027\\n\\n\u0027) + \u0027\\n\\nFor EACH job above, write ONE Bulgarian sentence summarising the key technical match or gap. Return exactly \u0027 + toSummarize.length + \u0027 entries, each with its job_index.\u0027;\n\nreturn [{ json: { summary_text, scored, jobs } }];\n"
+                                     },
+                      "id":  "e5af77aa-a7f2-4006-9784-59dc57ba6a09",
+                      "name":  "Build Scoring Input",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3200,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const text = $input.first().json.text || \u0027\u0027;\nif (!text.trim()) throw new Error(\u0027LlamaParse returned empty text\u0027);\nreturn [{ json: { text } }];"
+                                     },
+                      "id":  "c68f3e08-f005-4719-a8a4-b098c80e3923",
+                      "name":  "Prepare CV Text",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       944,
+                                       400
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "tier":  "cost_effective"
+                                     },
+                      "id":  "e4f13b86-0cc8-43b3-9e52-d8ecf9c3dd81",
+                      "name":  "LlamaParse Parse",
+                      "type":  "@llamaindex/n8n-nodes-llamacloud.llamaParsePlatform",
+                      "typeVersion":  1,
+                      "position":  [
+                                       752,
+                                       416
+                                   ],
+                      "onError":  "continueErrorOutput"
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "deepseek-v4-flash",
+                                         "options":  {
+                                                         "temperature":  0
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3520,
+                                       304
+                                   ],
+                      "id":  "599ab8fd-fe3d-4395-949a-ed8bf45161df",
+                      "name":  "DeepSeek Chat Model2"
+                  },
+                  {
+                      "parameters":  {
+                                         "modelName":  "models/gemini-3.5-flash",
+                                         "options":  {
+                                                         "temperature":  0
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       1600,
+                                       432
+                                   ],
+                      "id":  "e1aacd11-d879-43b2-8148-ffd0ab5fa55c",
+                      "name":  "Google Gemini Chat Model"
+                  },
+                  {
+                      "parameters":  {
+                                         "modelName":  "models/gemini-3.5-flash",
+                                         "options":  {
+                                                         "temperature":  0
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       2784,
+                                       320
+                                   ],
+                      "id":  "1e75b6a9-ab0c-4229-b83d-2193317bb9be",
+                      "name":  "Google Gemini Chat Model1"
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "deepseek-v4-pro",
+                                         "options":  {
+                                                         "temperature":  0
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3360,
+                                       304
+                                   ],
+                      "id":  "0ec681aa-90d8-4a60-8ed1-765788584c05",
+                      "name":  "DeepSeek Chat Model1"
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "deepseek-v4-pro",
+                                         "options":  {
+                                                         "temperature":  0
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+                      "typeVersion":  1,
+                      "position":  [
+                                       2928,
+                                       320
+                                   ],
+                      "id":  "74e977d9-dca0-4250-9568-7002c3e5e11f",
+                      "name":  "DeepSeek Chat Model3"
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "deepseek-v4-pro",
+                                         "options":  {
+                                                         "temperature":  0
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+                      "typeVersion":  1,
+                      "position":  [
+                                       1440,
+                                       432
+                                   ],
+                      "id":  "67ee062c-9266-4c78-b298-eca49ff3fe5c",
+                      "name":  "DeepSeek Chat Model4"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "// Deterministic CV \"market gap\" analysis: aggregates the skills that show up as MISSING\n// across the candidate\u0027s relevant (already-scored) jobs, so we can tell them which skills\n// would unlock the most opportunities. No LLM — pure aggregation of data we already have.\nconst jobs = $input.first().json.jobs || [];\nconst scored = $(\u0027Build Scoring Input\u0027).first().json.scored || [];\nconst cv = $(\u0027Build dev.bg Target URL\u0027).first().json.cv_profile || {};\n\nconst ALIASES = {\u0027js\u0027:\u0027javascript\u0027,\u0027ts\u0027:\u0027typescript\u0027,\u0027postgres\u0027:\u0027postgresql\u0027,\u0027node\u0027:\u0027node.js\u0027,\u0027nodejs\u0027:\u0027node.js\u0027,\u0027k8s\u0027:\u0027kubernetes\u0027,\u0027csharp\u0027:\u0027c#\u0027,\u0027golang\u0027:\u0027go\u0027,\u0027reactjs\u0027:\u0027react\u0027,\u0027react.js\u0027:\u0027react\u0027,\u0027vuejs\u0027:\u0027vue.js\u0027,\u0027vue\u0027:\u0027vue.js\u0027,\u0027css3\u0027:\u0027css\u0027,\u0027html5\u0027:\u0027html\u0027,\u0027dotnet\u0027:\u0027.net\u0027};\nfunction norm(s){ const t = (s||\u0027\u0027).toLowerCase().trim(); return ALIASES[t] || t; }\n\nconst cvTech = new Set([...(cv.skills||[]), ...(cv.programming_languages||[]), ...(cv.frameworks||[]), ...(cv.tools||[])].map(norm));\nconst FOUNDATIONAL = new Set([\u0027git\u0027,\u0027github\u0027,\u0027gitlab\u0027,\u0027bitbucket\u0027,\u0027agile\u0027,\u0027scrum\u0027,\u0027kanban\u0027,\u0027jira\u0027,\u0027confluence\u0027,\u0027rest\u0027,\u0027rest apis\u0027,\u0027soap\u0027].map(norm));\nconst HUMAN_LANGS = new Set([\u0027english\u0027,\u0027bulgarian\u0027,\u0027german\u0027,\u0027french\u0027,\u0027spanish\u0027,\u0027russian\u0027,\u0027italian\u0027,\u0027dutch\u0027,\u0027polish\u0027,\u0027romanian\u0027,\u0027greek\u0027,\u0027turkish\u0027,\u0027ukrainian\u0027].map(norm));\n\nconst agg = {};\nfor (const s of scored){\n  for (const raw of (s.missing_skills || [])){\n    const label = String(raw).split(\u0027 (\u0027)[0].trim();\n    const n = norm(label);\n    if (!n || cvTech.has(n) || FOUNDATIONAL.has(n) || HUMAN_LANGS.has(n)) continue;\n    if (!agg[n]) agg[n] = { label, count: 0, best: 0 };\n    agg[n].count++;\n    agg[n].best = Math.max(agg[n].best, s.score || 0);\n  }\n}\nconst all = Object.values(agg)\n  .map(g =\u003e ({ skill: g.label, jobs_count: g.count, best_score: g.best }))\n  .sort((a, b) =\u003e b.jobs_count - a.jobs_count || b.best_score - a.best_score);\n\nlet market_gaps = all.filter(g =\u003e g.jobs_count \u003e= 2);\nif (market_gaps.length === 0) market_gaps = all.slice(0, 3);\nmarket_gaps = market_gaps.slice(0, 5);\n\nreturn [{ json: { jobs, market_gaps } }];\n"
+                                     },
+                      "id":  "08964569-6325-446a-9c8b-306d0e3b9474",
+                      "name":  "Analyze CV Gaps",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4176,
+                                       96
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Receive CV Upload":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Normalize Input",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Parse CV Profile":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Build dev.bg Target URL",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Build dev.bg Target URL":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Fetch dev.bg",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Sort by Score":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Aggregate Job Results",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Build Final Response":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Email Provided?",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Email Provided?":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Send Results Email",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ],
+                                                             [
+                                                                 {
+                                                                     "node":  "Return Results",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Send Results Email":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Return Results",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Normalize Input":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Validate CV File",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Validate CV File":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Input Valid?",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Input Valid?":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "LlamaParse Parse",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ],
+                                                          [
+                                                              {
+                                                                  "node":  "Error: Invalid CV",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         },
+                        "CV Text Valid?":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Parse CV Profile",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "node":  "Error: Cannot Read CV",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Jobs Found?":  {
+                                            "main":  [
+                                                         [
+                                                             {
+                                                                 "node":  "Split Jobs for Fetch",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ],
+                                                         [
+                                                             {
+                                                                 "node":  "Return Empty Results",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ]
+                                                     ]
+                                        },
+                        "Unpack Batch Results":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Sort by Score",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Split Jobs for Fetch":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Fetch Job Page",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Fetch Job Page":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Parse Job Description",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Parse Job Description":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "Aggregate Fetched Jobs",
+                                                                           "type":  "main",
+                                                                           "index":  0
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  },
+                        "Aggregate Fetched Jobs":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "Prepare Batch Input",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "Fetch dev.bg":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Parse \u0026 Merge Categories",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         },
+                        "Parse \u0026 Merge Categories":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "Assign Job URLs",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                        "Assign Job URLs":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Keyword Pre-Score",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Keyword Pre-Score":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Jobs Found?",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Prepare Batch Input":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Extract Job Requirements",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Extract Job Requirements":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "Build Scoring Input",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "Build Scoring Input":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Score All Jobs (Batch)",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Prepare CV Text":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "CV Text Valid?",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Score All Jobs (Batch)":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "Unpack Batch Results",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "LlamaParse Parse":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Prepare CV Text",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ],
+                                                              [
+                                                                  {
+                                                                      "node":  "Error: Cannot Read CV",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "DeepSeek Chat Model2":  {
+                                                     "ai_languageModel":  [
+                                                                              [
+
+                                                                              ]
+                                                                          ]
+                                                 },
+                        "Google Gemini Chat Model":  {
+                                                         "ai_languageModel":  [
+                                                                                  [
+
+                                                                                  ]
+                                                                              ]
+                                                     },
+                        "Google Gemini Chat Model1":  {
+                                                          "ai_languageModel":  [
+                                                                                   [
+
+                                                                                   ]
+                                                                               ]
+                                                      },
+                        "DeepSeek Chat Model1":  {
+                                                     "ai_languageModel":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Score All Jobs (Batch)",
+                                                                                      "type":  "ai_languageModel",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                 },
+                        "DeepSeek Chat Model3":  {
+                                                     "ai_languageModel":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Extract Job Requirements",
+                                                                                      "type":  "ai_languageModel",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                 },
+                        "DeepSeek Chat Model4":  {
+                                                     "ai_languageModel":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Parse CV Profile",
+                                                                                      "type":  "ai_languageModel",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                 },
+                        "Aggregate Job Results":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "Analyze CV Gaps",
+                                                                           "type":  "main",
+                                                                           "index":  0
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  },
+                        "Analyze CV Gaps":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Build Final Response",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            }
+                    }
 }

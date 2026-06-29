@@ -317,6 +317,79 @@ html, body {
   }
 }
 
+// ── CV review section ─────────────────────────────────────────────────────────
+.cv-review {
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+  border-radius: 0.75rem;
+  background: rgba(var(--bs-primary-rgb), 0.04);
+  box-shadow: var(--card-shadow);
+
+  .cv-review-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.85rem;
+    i { color: var(--bs-primary); }
+  }
+
+  .cv-review-subtitle {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.6;
+    margin-bottom: 0.5rem;
+  }
+
+  .gap-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .gap-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.3em 0.4em 0.3em 0.7em;
+    border-radius: 999px;
+    color: #9a6300;
+    background: rgba(244, 169, 66, 0.14);
+    border: 1px solid rgba(244, 169, 66, 0.35);
+
+    .gap-count {
+      display: inline-grid;
+      place-items: center;
+      min-width: 1.3rem;
+      height: 1.3rem;
+      border-radius: 50%;
+      background: var(--bs-primary);
+      color: #fff;
+      font-size: 0.7rem;
+    }
+  }
+
+  .cv-review-hint {
+    font-size: 0.78rem;
+    opacity: 0.7;
+    margin: 0.6rem 0 0;
+  }
+
+  .cv-tips-list {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    li { margin-bottom: 0.25rem; }
+  }
+}
+
+[data-bs-theme="dark"] .cv-review .gap-tag {
+  color: #f7be6a;
+  background: rgba(244, 169, 66, 0.18);
+}
+
 // ── Job card ──────────────────────────────────────────────────────────────────
 .job-card {
   border: 1px solid var(--bs-border-color);
@@ -493,6 +566,39 @@ html, body {
   }
 }
 
+.main-stack-line {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--bs-body-color);
+
+  i { color: var(--bs-primary); }
+
+  .main-stack-label {
+    font-weight: 600;
+  }
+
+  .main-stack-alt {
+    display: block;
+    margin-top: 0.15rem;
+    margin-left: 1.2rem;
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--bs-secondary-color);
+  }
+
+  .main-stack-empty {
+    color: var(--bs-secondary-color);
+    font-style: italic;
+  }
+}
+
+.skills-empty {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--bs-secondary-color);
+  opacity: 0.75;
+}
+
 .skills-section {
   margin-top: 0.75rem;
 
@@ -523,6 +629,12 @@ html, body {
       border: 1px solid rgba(45, 198, 83, 0.3);
     }
 
+    &.partial {
+      background-color: rgba(244, 169, 66, 0.14);
+      color: #9a6300;
+      border: 1px solid rgba(244, 169, 66, 0.35);
+    }
+
     &.missing {
       background-color: rgba(230, 57, 70, 0.1);
       color: #a01825;
@@ -538,6 +650,12 @@ html, body {
       background-color: rgba(45, 198, 83, 0.15);
       color: #5de07a;
       border-color: rgba(45, 198, 83, 0.25);
+    }
+
+    &.partial {
+      background-color: rgba(244, 169, 66, 0.18);
+      color: #f7be6a;
+      border-color: rgba(244, 169, 66, 0.3);
     }
 
     &.missing {

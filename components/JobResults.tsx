@@ -1,5 +1,6 @@
 import type { AnalyzeResponse } from '@/types';
 import JobCard from './JobCard';
+import CVReviewSection from './CVReviewSection';
 
 interface Props {
   data: AnalyzeResponse;
@@ -56,6 +57,8 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
           {message}
         </div>
       )}
+
+      <CVReviewSection review={data.cv_review} />
 
       {jobs.length === 0 ? (
         <div className="empty-state">

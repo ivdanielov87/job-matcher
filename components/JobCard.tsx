@@ -83,6 +83,20 @@ export default function JobCard({ job }: { job: Job }) {
           )}
         </div>
 
+        {/* Main stack of the role */}
+        <div className="main-stack-line">
+          <i className="bi bi-bullseye me-1" />
+          <span className="main-stack-label">Главен стек:</span>{' '}
+          {job.main_stack && job.main_stack.length > 0 ? (
+            job.main_stack.join(', ')
+          ) : (
+            <span className="main-stack-empty">не е посочен</span>
+          )}
+          {job.main_alt && (
+            <span className="main-stack-alt">({job.main_alt})</span>
+          )}
+        </div>
+
         {/* Matched skills */}
         {job.matched_skills.length > 0 && (
           <div className="skills-section">
@@ -92,7 +106,7 @@ export default function JobCard({ job }: { job: Job }) {
             </div>
             <div className="skill-tags">
               {job.matched_skills.map((skill, i) => (
-                <span key={i} className="skill-tag matched">
+                <span key={i} className={`skill-tag ${skill.includes(' (') ? 'partial' : 'matched'}`}>
                   {skill}
                 </span>
               ))}
@@ -100,13 +114,13 @@ export default function JobCard({ job }: { job: Job }) {
           </div>
         )}
 
-        {/* Missing skills */}
-        {job.missing_skills.length > 0 && (
-          <div className="skills-section mt-2">
-            <div className="skills-label">
-              <i className="bi bi-x-circle me-1" />
-              Липсващи умения
-            </div>
+        {/* Missing skills — always shown */}
+        <div className="skills-section mt-2">
+          <div className="skills-label">
+            <i className="bi bi-x-circle me-1" />
+            Липсващи умения
+          </div>
+          {job.missing_skills.length > 0 ? (
             <div className="skill-tags">
               {job.missing_skills.map((skill, i) => (
                 <span key={i} className="skill-tag missing">
@@ -114,8 +128,10 @@ export default function JobCard({ job }: { job: Job }) {
                 </span>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="skills-empty">Не са открити</div>
+          )}
+        </div>
 
         {/* AI Summary */}
         {job.summary && (

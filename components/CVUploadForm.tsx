@@ -9,7 +9,6 @@ interface Props {
 }
 
 const LOCATIONS = ['Remote', 'София', 'Пловдив', 'Варна', 'Бургас', 'Русе', 'Стара Загора'];
-const LANGUAGES = ['И двата', 'Български', 'English'];
 const DAYS = [7, 14];
 
 export default function CVUploadForm({ onSubmit, loading }: Props) {
@@ -17,7 +16,6 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const [form, setForm] = useState<FormData>({
     location: 'Remote',
-    language: 'И двата',
     days_back: 7,
     email: '',
   });
@@ -112,19 +110,25 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                 </select>
               </div>
 
-              {/* Language */}
+              {/* Email */}
               <div className="col-12 col-sm-6">
                 <div className="pref-label">
-                  <i className="bi bi-translate" />
-                  Език на обявите
+                  <i className="bi bi-envelope" />
+                  Email
+                  <span className="pref-optional ms-1">(по желание)</span>
                 </div>
-                <select
-                  className="form-select form-select-sm"
-                  value={form.language}
-                  onChange={e => setForm(f => ({ ...f, language: e.target.value }))}
-                >
-                  {LANGUAGES.map(l => <option key={l}>{l}</option>)}
-                </select>
+                <div className="input-group input-group-sm">
+                  <span className="input-group-text">
+                    <i className="bi bi-envelope" />
+                  </span>
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="ivan@example.com"
+                    value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  />
+                </div>
               </div>
 
               {/* Days */}
@@ -150,27 +154,6 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                       </label>
                     </Fragment>
                   ))}
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="col-12 col-sm-6">
-                <div className="pref-label">
-                  <i className="bi bi-envelope" />
-                  Email
-                  <span className="pref-optional ms-1">(по желание)</span>
-                </div>
-                <div className="input-group input-group-sm">
-                  <span className="input-group-text">
-                    <i className="bi bi-envelope" />
-                  </span>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="ivan@example.com"
-                    value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  />
                 </div>
               </div>
             </div>
