@@ -45,7 +45,7 @@ export default function CVStats({ stats }: { stats?: SearchStats }) {
   return (
     <div className="search-stats">
       <p className="search-stats-text">
-        В dev.bg намерихме <strong>{stats.total_listings}</strong>
+        В сайта на <strong>DEV.BG</strong> намерихме <strong>{stats.total_listings}</strong>
         {multiCat ? ' уникални' : ''}
         {isRemote ? ' remote' : ''} обяви
         {catsLabel && (

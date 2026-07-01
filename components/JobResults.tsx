@@ -2,6 +2,7 @@ import type { AnalyzeResponse } from '@/types';
 import JobCard from './JobCard';
 import CVReviewSection from './CVReviewSection';
 import CVStats from './CVStats';
+import ScrollToTop from './ScrollToTop';
 
 interface Props {
   data: AnalyzeResponse;
@@ -30,6 +31,14 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
         ? `последните ${daysBack / 7} седмици`
         : `последните ${daysBack} дни`;
   const hasResults = total > 0;
+
+  const review = data.cv_review;
+  const hasReview = !!(
+    review &&
+    ((review.market_gaps?.length ?? 0) > 0 || (review.tips?.length ?? 0) > 0)
+  );
+  const scrollToReview = () =>
+    document.getElementById('cv-review-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div>
@@ -81,6 +90,14 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
         </div>
       )}
 
+      {hasReview && jobs.length > 0 && (
+        <button type="button" className="review-jump" onClick={scrollToReview}>
+          <i className="bi bi-lightbulb-fill" />
+          Виж препоръките за твоето CV
+          <i className="bi bi-chevron-down" />
+        </button>
+      )}
+
       {jobs.length === 0 ? (
         <div className="empty-state">
           <i className="bi bi-search" />
@@ -88,7 +105,7 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
           <p className="small">Опитай с по-широки предпочитания или по-голям брой дни</p>
         </div>
       ) : (
-        <div className="row g-3">
+        <div className="row g-3 jobs-grid">
           {jobs.map((job, i) => (
             <div key={i} className="col-12 col-md-6 col-xl-4">
               <JobCard job={job} />
@@ -97,7 +114,11 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
         </div>
       )}
 
-      <CVReviewSection review={data.cv_review} />
+      <div id="cv-review-anchor">
+        <CVReviewSection review={data.cv_review} />
+      </div>
+
+      <ScrollToTop />
     </div>
   );
 }

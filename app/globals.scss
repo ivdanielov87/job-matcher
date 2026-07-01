@@ -772,6 +772,67 @@ html, body {
   .cv-review .cv-review-badge { width: 2.3rem; height: 2.3rem; font-size: 1rem; }
 }
 
+// ── Jobs list spacing + jump-to-recommendations + scroll-to-top ─────────────────
+.jobs-grid {
+  margin-bottom: 1.5rem; // keep the CV-recommendations card off the last job
+}
+
+// "Виж препоръките за твоето CV" — jumps down to the recommendations.
+.review-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.09);
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.22);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+
+  &:hover {
+    background: rgba(var(--bs-primary-rgb), 0.16);
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+  }
+  .bi-chevron-down { font-size: 0.72rem; opacity: 0.7; }
+}
+
+// Floating scroll-to-top button (mobile + desktop).
+.scroll-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 1040;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+  box-shadow: 0 4px 14px rgba(var(--bs-primary-rgb), 0.4);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(var(--bs-primary-rgb), 0.5);
+  }
+
+  @media (max-width: 575px) {
+    right: 1rem;
+    bottom: 1rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.1rem;
+  }
+}
+
 // ── Job card ──────────────────────────────────────────────────────────────────
 .job-card {
   border: 1px solid var(--bs-border-color);
