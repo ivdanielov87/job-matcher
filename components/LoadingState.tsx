@@ -50,7 +50,7 @@ export default function LoadingState() {
       </p>
 
       <p className="loading-sub text-muted">
-        Това може да отнеме 30–90 секунди
+        Това може да отнеме 60–120 секунди
       </p>
 
       <p className="text-muted" style={{ fontSize: '0.82rem' }}>

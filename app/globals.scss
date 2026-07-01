@@ -38,14 +38,61 @@ html, body {
 }
 
 // ── Navbar ───────────────────────────────────────────────────────────────────
+.site-navbar {
+  // sticky-top class handles position; these refine the look.
+  // Solid (opaque) background with a faint brand tint — no see-through on scroll.
+  background: linear-gradient(rgba(var(--bs-primary-rgb), 0.04), rgba(var(--bs-primary-rgb), 0.04)), var(--bs-body-bg);
+  border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+  transition: box-shadow 0.25s ease;
+
+  @media (min-width: 768px) {
+    min-height: 60px;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+  }
+}
+
+[data-bs-theme="dark"] .site-navbar {
+  background: linear-gradient(rgba(var(--bs-primary-rgb), 0.1), rgba(var(--bs-primary-rgb), 0.1)), var(--bs-body-bg);
+  border-bottom-color: rgba(var(--bs-primary-rgb), 0.22);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
 .navbar-brand-logo {
-  font-weight: 700;
-  font-size: 1.2rem;
-  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.035em;
   color: var(--bs-body-color);
   text-decoration: none;
+  line-height: 1;
 
-  span { color: var(--bs-primary); }
+  .brand-mark {
+    flex-shrink: 0;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 0.6rem;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.32);
+  }
+
+  .brand-text { white-space: nowrap; }
+
+  .brand-accent {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
 // ── Hero ─────────────────────────────────────────────────────────────────────
@@ -180,6 +227,10 @@ html, body {
     }
   }
 }
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+// Site-wide: every button shares the same gentle rounding.
+.btn { border-radius: 0.55rem; }
 
 // ── Submit button ─────────────────────────────────────────────────────────────
 .submit-btn {
@@ -319,16 +370,76 @@ html, body {
 
 // ── CV review section ─────────────────────────────────────────────────────────
 .cv-review {
-  border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
-  border-radius: 0.75rem;
-  background: rgba(var(--bs-primary-rgb), 0.04);
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+  border-radius: 0.85rem;
+  background: rgba(var(--bs-primary-rgb), 0.045);
   box-shadow: var(--card-shadow);
 
-  .cv-review-title {
-    font-size: 1rem;
+  .card-body { padding: 1.5rem 1.75rem; }
+
+  // The whole header is a toggle button (interactive only on mobile).
+  .cv-review-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: default; // desktop: not collapsible
+  }
+
+  .cv-review-head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    text-align: left;
+  }
+
+  .cv-review-badge {
+    flex-shrink: 0;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.75rem;
+    display: grid;
+    place-items: center;
+    font-size: 1.15rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.28);
+  }
+
+  .cv-review-eyebrow {
+    display: block;
+    font-size: 0.66rem;
     font-weight: 700;
-    margin-bottom: 0.85rem;
-    i { color: var(--bs-primary); }
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.4;
+    margin-bottom: 0.15rem;
+  }
+
+  .cv-review-title {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .cv-review-chevron {
+    display: none; // shown only on mobile
+    opacity: 0.5;
+    transition: transform 0.2s ease;
+  }
+
+  .cv-review-body {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bs-border-color);
   }
 
   .cv-review-subtitle {
@@ -388,6 +499,277 @@ html, body {
 [data-bs-theme="dark"] .cv-review .gap-tag {
   color: #f7be6a;
   background: rgba(244, 169, 66, 0.18);
+}
+
+// Slightly lift the tinted surface on dark so it reads as a distinct card.
+[data-bs-theme="dark"] .results-card,
+[data-bs-theme="dark"] .cv-review {
+  background: rgba(var(--bs-primary-rgb), 0.12);
+  border-color: rgba(var(--bs-primary-rgb), 0.22);
+}
+
+// Stylish gradient accent across the top edge of each card.
+.results-card,
+.cv-review {
+  position: relative;
+  overflow: hidden;
+}
+.results-card::before,
+.cv-review::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--bs-primary) 0%, #7c3aed 55%, rgba(124, 58, 237, 0.35) 100%);
+}
+
+// On mobile the CV tips collapse into an accordion (closed by default) so they
+// don't push the job cards out of view.
+@media (max-width: 767px) {
+  .cv-review .cv-review-toggle { cursor: pointer; }
+  .cv-review .cv-review-chevron { display: inline-block; }
+  .cv-review .cv-review-body { display: none; margin-top: 0; }
+  .cv-review.is-open .cv-review-body { display: block; margin-top: 0.95rem; }
+  .cv-review.is-open .cv-review-chevron { transform: rotate(180deg); }
+}
+
+// ── Results card (header + search funnel stats, merged) ─────────────────────────
+.results-card {
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+  border-radius: 0.85rem;
+  background: rgba(var(--bs-primary-rgb), 0.045);
+  box-shadow: var(--card-shadow);
+
+  .card-body { padding: 1.5rem 1.75rem; }
+
+  // header lives inside the card now — drop its standalone bottom margin
+  .results-header {
+    align-items: flex-start;
+    margin-bottom: 0;
+  }
+}
+
+.results-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.results-badge {
+  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.75rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.28);
+
+  &--empty {
+    color: var(--bs-secondary-color);
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+    box-shadow: none;
+  }
+}
+
+.results-eyebrow {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.4;
+  margin-bottom: 0.15rem;
+}
+
+.results-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.results-meta {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  opacity: 0.6;
+
+  .results-meta-sep {
+    margin-left: 0.7rem;
+    padding-left: 0.7rem;
+    border-left: 1px solid var(--bs-border-color);
+  }
+}
+
+// "Ново търсене" — softly branded so it stands out from the plain outline buttons.
+.reset-btn {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.1);
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.22);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+
+  &:hover {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.17);
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+  }
+  &:active { transform: translateY(0.5px); }
+}
+
+.search-stats {
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--bs-border-color);
+
+  .search-stats-text {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--bs-secondary-color);
+    margin: 0 0 1.05rem;
+    strong { color: var(--bs-body-color); font-weight: 600; }
+  }
+
+  .search-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 0.6rem;
+
+    @media (max-width: 575px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  // Light, compact tiles: big number on top, small icon + label beneath.
+  // Solid surface so they read as raised chips against the tinted card.
+  .stat-item {
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.65rem;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+
+    .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 0.32rem;
+      margin-top: 0.3rem;
+      font-size: 0.72rem;
+      opacity: 0.65;
+
+      i { font-size: 0.82rem; opacity: 0.85; }
+    }
+
+    &.stat-good {
+      background: rgba(var(--bs-success-rgb), 0.08);
+      border-color: rgba(var(--bs-success-rgb), 0.25);
+      .stat-value, .stat-label i { color: var(--bs-success); }
+      .stat-label { opacity: 0.85; }
+    }
+  }
+
+  // "Compare by" legend — the candidate's stack, so it's clear what we match against.
+  .stack-legend {
+    list-style: none;
+    margin: 0 0 1.05rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 0.6rem;
+    background: rgba(var(--bs-secondary-rgb), 0.04);
+
+    li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      & + li { margin-top: 0.35rem; }
+      i { color: var(--bs-primary); opacity: 0.8; }
+    }
+    .stack-legend-heading {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.55;
+      margin-bottom: 0.5rem;
+      gap: 0.3rem;
+    }
+    .stack-legend-label { font-weight: 600; }
+    .stack-legend-items { opacity: 0.75; }
+  }
+
+  // Market view: most-requested technologies across the in-period listings.
+  .tech-demand {
+    margin-top: 1.1rem;
+
+    .tech-demand-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.55;
+      margin-bottom: 0.55rem;
+    }
+    .tech-demand-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .tech-demand-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.22rem 0.3rem 0.22rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(var(--bs-secondary-rgb), 0.08);
+      border: 1px solid var(--bs-border-color);
+    }
+    .tech-demand-count {
+      display: inline-grid;
+      place-items: center;
+      min-width: 1.35rem;
+      height: 1.35rem;
+      border-radius: 50%;
+      background: rgba(var(--bs-primary-rgb), 0.12);
+      color: var(--bs-primary);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+  }
+}
+
+// "Ново търсене" is rendered OUTSIDE the card on mobile (full width, at the very top).
+.results-reset-mobile { display: none; }
+
+// ── Results card — mobile polish ────────────────────────────────────────────────
+@media (max-width: 575px) {
+  .results-reset-mobile { display: block; } // show the external mobile button
+  .results-reset { display: none; }         // hide the in-header desktop button
+
+  .results-card .card-body { padding: 1.15rem 1.15rem; }
+
+  // hide the bullseye badge on mobile (keeps the header clean & compact)
+  .results-badge { display: none; }
+
+  .results-title { font-size: 1.05rem; }
+
+  .search-stats { margin-top: 1.15rem; padding-top: 1.15rem; }
+  .search-stats .stat-item .stat-value { font-size: 1.3rem; }
+
+  // CV review header scales down to match
+  .cv-review .card-body { padding: 1.15rem 1.15rem; }
+  .cv-review .cv-review-title { font-size: 1.05rem; }
+  .cv-review .cv-review-badge { width: 2.3rem; height: 2.3rem; font-size: 1rem; }
 }
 
 // ── Job card ──────────────────────────────────────────────────────────────────

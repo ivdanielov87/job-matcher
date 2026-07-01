@@ -5,7 +5,7 @@ const jobs = $input.first().json.jobs || [];                    // passthrough f
 const scored = $('Build Scoring Input').first().json.scored || [];
 const cv = $('Build dev.bg Target URL').first().json.cv_profile || {};
 
-const ALIASES = {'js':'javascript','ts':'typescript','postgres':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net'};
+const ALIASES = {'js':'javascript','ts':'typescript','postgres':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net'};
 function norm(s){ const t = (s||'').toLowerCase().trim(); return ALIASES[t] || t; }
 
 // skills the candidate already has (exclude from gaps)
@@ -36,4 +36,83 @@ let market_gaps = all.filter(g => g.jobs_count >= 2);
 if (market_gaps.length === 0) market_gaps = all.slice(0, 3);
 market_gaps = market_gaps.slice(0, 5);
 
-return [{ json: { jobs, market_gaps } }];
+// ---- Funnel statistics (transparency for the user) -----------------------
+// The full funnel, widest to narrowest:
+//   total_listings : ALL remote listings in the category(ies) on dev.bg (any date)
+//   in_period      : those within the selected days_back window (the date-filtered pool)
+//   evaluated      : jobs that passed the keyword pre-filter and got scored
+//   matched        : jobs we actually show (score >= adaptive threshold)
+//   below_threshold: of the EVALUATED jobs, how many fell below the threshold
+const evaluated = jobs.length;
+const strong = jobs.filter(j => (j.score || 0) >= 40).length;
+// Adaptive show-threshold: only relax to 30% when the candidate has few strong hits.
+const threshold = strong >= 4 ? 40 : 30;
+const matched = jobs.filter(j => (j.score || 0) >= threshold).length;
+const below_30 = jobs.filter(j => (j.score || 0) < 30).length;
+
+// in_period = date-filtered pool (Assign Job URLs). Fallback to evaluated count.
+let in_period = evaluated;
+const periodPool = (((($('Assign Job URLs').first() || {}).json) || {}).output || {}).jobs;
+if (Array.isArray(periodPool)) in_period = periodPool.length;
+
+// total_listings = everything scraped from dev.bg before the date filter.
+let total_listings = in_period;
+const allPool = (((($('Parse & Merge Categories').first() || {}).json) || {}).output || {}).jobs;
+if (Array.isArray(allPool)) total_listings = allPool.length;
+
+const below_threshold = Math.max(0, evaluated - matched);
+const role = cv.job_type || '';
+const period_days = ($('Normalize Input').first().json.days_back) || 0;
+const location = ($('Build dev.bg Target URL').first().json.location) || '';
+
+// One pass over the in-period listings for two things:
+//   from_core_stack : how many share >=1 of the candidate's languages/frameworks
+//   tech_demand     : how many listings request each technology (from the icons) — market view
+const coreStack = new Set([...(cv.programming_languages || []), ...(cv.frameworks || [])].map(norm).filter(Boolean));
+let from_core_stack = 0;
+const demandMap = {}; // norm -> { tech, count }
+const periodJobs = (((($('Assign Job URLs').first() || {}).json) || {}).output || {}).jobs;
+if (Array.isArray(periodJobs)) {
+  for (const j of periodJobs) {
+    const seen = new Set();
+    let inStack = false;
+    for (const raw of String(j.description || '').replace('Tech stack:', '').split(',')) {
+      const label = String(raw).trim();
+      const n = norm(label);
+      if (!n || seen.has(n)) continue;
+      seen.add(n);
+      if (coreStack.has(n)) inStack = true;
+      if (FOUNDATIONAL.has(n) || HUMAN_LANGS.has(n)) continue;
+      if (!demandMap[n]) demandMap[n] = { tech: label, count: 0 };
+      demandMap[n].count++;
+    }
+    if (inStack) from_core_stack++;
+  }
+}
+const tech_demand = Object.values(demandMap).sort((a, b) => b.count - a.count).slice(0, 8);
+
+// The candidate's stack, surfaced for transparency (so the user sees what we match against).
+const stack_core = [...(cv.programming_languages || []), ...(cv.frameworks || [])];
+const stack_tools = [...(cv.tools || [])];
+
+// Categories actually searched (a role like Fullstack spans several dev.bg sections).
+// Primary (job_type) first, then the rest in scrape order — so the UI can say
+// "за Fullstack, Backend и Frontend" honestly.
+let categories = role ? [role] : [];
+try {
+  const built = $('Build dev.bg Target URL').all().map(i => i.json.category).filter(Boolean);
+  const distinct = [...new Set(built)];
+  categories = role
+    ? [role, ...distinct.filter(c => c !== role)]
+    : distinct;
+} catch (e) { /* keep [role] */ }
+
+const stats = {
+  total_listings, in_period, from_core_stack, evaluated, matched,
+  below_threshold, below_30, threshold, role, categories, period_days, location,
+  stack_core, stack_tools, tech_demand,
+  // legacy alias kept so older clients don't break
+  found: in_period
+};
+
+return [{ json: { jobs, market_gaps, stats } }];

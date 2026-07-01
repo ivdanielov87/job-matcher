@@ -26,11 +26,15 @@ export default function Header({ onReset }: Props) {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg border-bottom">
+    <nav className="navbar navbar-expand-lg site-navbar sticky-top">
       <div className="container">
         <span className="navbar-brand-logo">
-          <i className="bi bi-briefcase-fill me-2" style={{ color: 'var(--bs-primary)' }} />
-          CV Job<span> Matcher</span>
+          <span className="brand-mark">
+            <i className="bi bi-briefcase-fill" />
+          </span>
+          <span className="brand-text">
+            CV Job <span className="brand-accent">Matcher</span>
+          </span>
         </span>
 
         <div className="ms-auto d-flex align-items-center gap-2">
@@ -56,21 +60,6 @@ export default function Header({ onReset }: Props) {
               <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
             </span>
           </a>
-
-          <a
-            href="https://www.jobs.bg"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-sm btn-outline-secondary"
-            title="Към jobs.bg"
-          >
-            <i className="bi bi-briefcase d-sm-none" />
-            <span className="d-none d-sm-inline">
-              Към jobs.bg
-              <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
-            </span>
-          </a>
-
           {mounted && (
             <button
               className="btn btn-sm btn-outline-secondary"

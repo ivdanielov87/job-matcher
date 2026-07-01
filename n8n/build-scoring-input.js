@@ -50,7 +50,7 @@ for (const c of CLOUD) {
 
 const spokenLangs = cv.spoken_languages || [];
 
-const ALIASES = {'js':'javascript','ecmascript':'javascript','ts':'typescript','postgres':'postgresql','postgre':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','.net 8':'.net','.net framework':'.net','rest':'rest apis','rest api':'rest apis','restful apis':'rest apis','restful api':'rest apis'};
+const ALIASES = {'js':'javascript','ecmascript':'javascript','ts':'typescript','postgres':'postgresql','postgre':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','.net 8':'.net','.net framework':'.net','rest':'rest apis','rest api':'rest apis','restful apis':'rest apis','restful api':'rest apis'};
 function norm(s){ const t = (s||'').toLowerCase().trim(); return ALIASES[t] || t; }
 const candidateNorm = candidateSkills.map(norm);
 const candidateSet = new Set(candidateNorm);

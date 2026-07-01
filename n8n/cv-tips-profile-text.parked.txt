@@ -1,0 +1,7 @@
+PARKED — do NOT publish without user's OK (they said "недей все още").
+This is the profile-enriched `text` input for the `CV Tips` node. The live/published
+version uses raw CV text only: ={{ $('Prepare CV Text').first().json.text }}
+
+To re-enable, set CV Tips node parameter /text to:
+
+={{ (() => { const p = $('Build dev.bg Target URL').first().json.cv_profile || {}; const j = (a) => (a && a.length ? a.join(', ') : '—'); const profile = 'ALREADY EXTRACTED FROM THIS CV (do not suggest adding any of these):\n' + '- programming languages: ' + j(p.programming_languages) + '\n' + '- frameworks: ' + j(p.frameworks) + '\n' + '- tools/platforms: ' + j(p.tools) + '\n' + '- spoken languages: ' + j(p.spoken_languages) + '\n' + '- experience level: ' + (p.experience_level || '—') + ' (' + (p.years_of_experience || 0) + ' years)\n' + '- job titles: ' + j(p.job_titles); return profile + '\n\n=== FULL CV TEXT ===\n' + ($('Prepare CV Text').first().json.text || ''); })() }}

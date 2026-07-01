@@ -214,19 +214,19 @@
                                                                                  {
                                                                                      "id":  "r-jobs",
                                                                                      "name":  "jobs",
-                                                                                     "value":  "={{ ($json.jobs || []).filter(j =\u003e j.score \u003e= (($json.jobs || []).filter(x =\u003e x.score \u003e= 40).length \u003e= 4 ? 40 : 30)) }}",
+                                                                                     "value":  "={{ ($(\u0027Analyze CV Gaps\u0027).first().json.jobs || []).filter(j =\u003e j.score \u003e= (($(\u0027Analyze CV Gaps\u0027).first().json.jobs || []).filter(x =\u003e x.score \u003e= 40).length \u003e= 4 ? 40 : 30)) }}",
                                                                                      "type":  "array"
                                                                                  },
                                                                                  {
                                                                                      "id":  "r-total",
                                                                                      "name":  "total",
-                                                                                     "value":  "={{ ($json.jobs || []).filter(j =\u003e j.score \u003e= (($json.jobs || []).filter(x =\u003e x.score \u003e= 40).length \u003e= 4 ? 40 : 30)).length }}",
+                                                                                     "value":  "={{ ($(\u0027Analyze CV Gaps\u0027).first().json.jobs || []).filter(j =\u003e j.score \u003e= (($(\u0027Analyze CV Gaps\u0027).first().json.jobs || []).filter(x =\u003e x.score \u003e= 40).length \u003e= 4 ? 40 : 30)).length }}",
                                                                                      "type":  "number"
                                                                                  },
                                                                                  {
-                                                                                     "id":  "r-gaps",
+                                                                                     "id":  "r-review",
                                                                                      "name":  "cv_review",
-                                                                                     "value":  "={{ { market_gaps: ($json.market_gaps || []) } }}",
+                                                                                     "value":  "={{ { market_gaps: ($(\u0027Analyze CV Gaps\u0027).first().json.market_gaps || []), tips: (($(\u0027CV Tips\u0027).first().json.output) || {}).tips || [] } }}",
                                                                                      "type":  "object"
                                                                                  },
                                                                                  {
@@ -258,7 +258,7 @@
                       "type":  "n8n-nodes-base.set",
                       "typeVersion":  3.4,
                       "position":  [
-                                       4352,
+                                       4640,
                                        96
                                    ]
                   },
@@ -292,7 +292,7 @@
                       "type":  "n8n-nodes-base.if",
                       "typeVersion":  2.2,
                       "position":  [
-                                       4528,
+                                       4816,
                                        96
                                    ]
                   },
@@ -310,7 +310,7 @@
                       "type":  "n8n-nodes-base.gmail",
                       "typeVersion":  2.2,
                       "position":  [
-                                       4688,
+                                       4992,
                                        -48
                                    ],
                       "webhookId":  "782e0508-a7fd-44d1-b441-e13c8e4de2fe",
@@ -329,7 +329,7 @@
                       "type":  "n8n-nodes-base.respondToWebhook",
                       "typeVersion":  1.5,
                       "position":  [
-                                       4864,
+                                       5168,
                                        112
                                    ]
                   },
@@ -702,22 +702,6 @@
                   },
                   {
                       "parameters":  {
-                                         "model":  "deepseek-v4-flash",
-                                         "options":  {
-                                                         "temperature":  0
-                                                     }
-                                     },
-                      "type":  "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
-                      "typeVersion":  1,
-                      "position":  [
-                                       3520,
-                                       304
-                                   ],
-                      "id":  "599ab8fd-fe3d-4395-949a-ed8bf45161df",
-                      "name":  "DeepSeek Chat Model2"
-                  },
-                  {
-                      "parameters":  {
                                          "modelName":  "models/gemini-3.5-flash",
                                          "options":  {
                                                          "temperature":  0
@@ -808,6 +792,40 @@
                                        4176,
                                        96
                                    ]
+                  },
+                  {
+                      "parameters":  {
+                                         "text":  "={{ $(\u0027Prepare CV Text\u0027).first().json.text }}",
+                                         "schemaType":  "fromJson",
+                                         "jsonSchemaExample":  "{\"tips\": [\"Add concrete numbers and impact to your achievements (e.g. reduced load time by 40%).\", \"Add a short professional summary at the top of the CV.\"]}",
+                                         "options":  {
+                                                         "systemPromptTemplate":  "You are an experienced technical recruiter reviewing a candidate\u0027s CV. First read it carefully and note what it ALREADY contains. Then give 2-4 genuinely useful, specific improvement suggestions. WRITE EVERY SUGGESTION IN BULGARIAN.\n\nSTRICT RULES:\n- Suggest ONLY things that are genuinely missing or weak in THIS specific CV. NEVER suggest adding something it already has — e.g. if there is already a skills / technologies list, do NOT suggest adding a \"tech stack\" section.\n- Do NOT use placeholder templates such as \"X%\", \"from Y to Z\", or \"с X%\". If you suggest quantifying an achievement, point to a SPECIFIC responsibility/line that is actually in this CV and lacks a number; otherwise skip that suggestion entirely.\n- Every tip must reference concrete content that is really in THIS CV. No generic career advice. Do not blandly say \"add a GitHub link\" unless it is clearly relevant and you can tell it is absent.\n- Be honest: if the CV is already strong, return fewer but sharper tips (2 is fine).\n\nEach tip = one concise, concrete Bulgarian sentence that the candidate could act on immediately."
+                                                     }
+                                     },
+                      "id":  "fcb498e8-e690-4b0d-859a-9d2d41a576f0",
+                      "name":  "CV Tips",
+                      "type":  "@n8n/n8n-nodes-langchain.informationExtractor",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       4336,
+                                       96
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "deepseek-v4-pro",
+                                         "options":  {
+                                                         "temperature":  0
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+                      "typeVersion":  1,
+                      "position":  [
+                                       4336,
+                                       288
+                                   ],
+                      "id":  "b3c7bab4-574a-436c-8c28-32dcefae1c8d",
+                      "name":  "DeepSeek Chat Model"
                   }
               ],
     "connections":  {
@@ -1143,13 +1161,6 @@
                                                               ]
                                                           ]
                                              },
-                        "DeepSeek Chat Model2":  {
-                                                     "ai_languageModel":  [
-                                                                              [
-
-                                                                              ]
-                                                                          ]
-                                                 },
                         "Google Gemini Chat Model":  {
                                                          "ai_languageModel":  [
                                                                                   [
@@ -1212,12 +1223,34 @@
                                                 "main":  [
                                                              [
                                                                  {
-                                                                     "node":  "Build Final Response",
+                                                                     "node":  "CV Tips",
                                                                      "type":  "main",
                                                                      "index":  0
                                                                  }
                                                              ]
                                                          ]
-                                            }
+                                            },
+                        "CV Tips":  {
+                                        "main":  [
+                                                     [
+                                                         {
+                                                             "node":  "Build Final Response",
+                                                             "type":  "main",
+                                                             "index":  0
+                                                         }
+                                                     ]
+                                                 ]
+                                    },
+                        "DeepSeek Chat Model":  {
+                                                    "ai_languageModel":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "CV Tips",
+                                                                                     "type":  "ai_languageModel",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                }
                     }
 }
