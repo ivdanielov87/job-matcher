@@ -9,7 +9,8 @@ interface Props {
 }
 
 const LOCATIONS = ['Remote', 'София', 'Пловдив', 'Варна', 'Бургас', 'Русе', 'Стара Загора'];
-const DAYS = [7, 14];
+const DAYS = [7, 14, 21];
+const WEEK_LABEL: Record<number, string> = { 7: '1 седмица', 14: '2 седмици', 21: '3 седмици' };
 
 export default function CVUploadForm({ onSubmit, loading }: Props) {
   const [file, setFile] = useState<File | null>(null);
@@ -135,7 +136,9 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
               <div className="col-12 col-sm-6">
                 <div className="pref-label">
                   <i className="bi bi-calendar3" />
-                  {form.days_back === 7 ? 'Обяви от последната седмица' : 'Обяви от последните 2 седмици'}
+                  {form.days_back === 7
+                    ? 'Обяви от последната седмица'
+                    : `Обяви от последните ${form.days_back / 7} седмици`}
                 </div>
                 <div className="d-flex gap-1 flex-wrap">
                   {DAYS.map(d => (
@@ -150,7 +153,7 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                         onChange={() => setForm(f => ({ ...f, days_back: d }))}
                       />
                       <label className="btn btn-outline-primary btn-sm" htmlFor={`days-${d}`}>
-                        {d === 7 ? '1 седмица' : '2 седмици'}
+                        {WEEK_LABEL[d]}
                       </label>
                     </Fragment>
                   ))}

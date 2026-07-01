@@ -23,7 +23,12 @@ function foundLabel(n: number): string {
 
 export default function JobResults({ data, onReset, daysBack }: Props) {
   const { jobs, total, message, processing_time_ms } = data;
-  const periodLabel = daysBack === 7 ? 'последната седмица' : `последните ${daysBack} дни`;
+  const periodLabel =
+    daysBack === 7
+      ? 'последната седмица'
+      : daysBack % 7 === 0
+        ? `последните ${daysBack / 7} седмици`
+        : `последните ${daysBack} дни`;
   const hasResults = total > 0;
 
   return (

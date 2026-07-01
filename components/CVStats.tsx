@@ -3,7 +3,7 @@ import type { SearchStats } from '@/types';
 function periodLabel(days: number): string {
   if (!days) return 'избрания период';
   if (days === 7) return 'последната седмица';
-  if (days === 14) return 'последните 2 седмици';
+  if (days % 7 === 0) return `последните ${days / 7} седмици`;
   return `последните ${days} дни`;
 }
 
