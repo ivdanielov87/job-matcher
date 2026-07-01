@@ -91,7 +91,7 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
           {/* Preferences section */}
           <div className="prefs-section mt-4">
             <div className="prefs-section-header">
-              <i className="bi bi-sliders me-2" />
+              <i className="bi bi-sliders" />
               Предпочитания
             </div>
 
@@ -119,9 +119,6 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                   <span className="pref-optional ms-1">(по желание)</span>
                 </div>
                 <div className="input-group input-group-sm">
-                  <span className="input-group-text">
-                    <i className="bi bi-envelope" />
-                  </span>
                   <input
                     type="email"
                     className="form-control"
@@ -140,7 +137,7 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                     ? 'Обяви от последната седмица'
                     : `Обяви от последните ${form.days_back / 7} седмици`}
                 </div>
-                <div className="d-flex gap-1 flex-wrap">
+                <div className="d-flex gap-2">
                   {DAYS.map(d => (
                     <Fragment key={d}>
                       <input
@@ -152,7 +149,7 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
                         checked={form.days_back === d}
                         onChange={() => setForm(f => ({ ...f, days_back: d }))}
                       />
-                      <label className="btn btn-outline-primary btn-sm" htmlFor={`days-${d}`}>
+                      <label className="btn week-btn btn-sm" htmlFor={`days-${d}`}>
                         {WEEK_LABEL[d]}
                       </label>
                     </Fragment>

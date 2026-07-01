@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Header from '@/components/Header';
 import CVUploadForm from '@/components/CVUploadForm';
 import LoadingState from '@/components/LoadingState';
@@ -14,20 +14,32 @@ export default function Home() {
   const [results, setResults] = useState<AnalyzeResponse | null>(null);
   const [daysBack, setDaysBack] = useState<number>(7);
   const [apiError, setApiError] = useState('');
+  const abortRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef<string>('');
 
   const handleSubmit = async (file: File, form: FormData) => {
     setState('loading');
     setApiError('');
     setDaysBack(form.days_back);
 
+    const requestId = crypto.randomUUID();
+    requestIdRef.current = requestId;
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     const fd = new FormData();
     fd.append('data', file);
     fd.append('location', form.location);
     fd.append('days_back', String(form.days_back));
+    fd.append('request_id', requestId);
     if (form.email) fd.append('email', form.email);
 
     try {
-      const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        body: fd,
+        signal: controller.signal,
+      });
       const data: AnalyzeResponse = await res.json();
 
       if (!res.ok || data.success === false) {
@@ -38,10 +50,35 @@ export default function Home() {
 
       setResults(data);
       setState('results');
-    } catch {
+    } catch (err) {
+      // Прекратено от потребителя — състоянието вече е върнато в handleCancel.
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       setApiError('Не може да се свържем с сървъра. Проверете връзката.');
       setState('form');
+    } finally {
+      abortRef.current = null;
     }
+  };
+
+  const handleCancel = () => {
+    // 1) Прекъсваме fetch-а към /api/analyze → route-ът освобождава server lock-а.
+    abortRef.current?.abort();
+    abortRef.current = null;
+
+    // 2) Сигнализираме на n8n да спре текущото изпълнение (best-effort).
+    const requestId = requestIdRef.current;
+    if (requestId) {
+      fetch('/api/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ request_id: requestId }),
+        keepalive: true,
+      }).catch(() => {});
+    }
+
+    // 3) Връщаме потребителя към формата.
+    setApiError('');
+    setState('form');
   };
 
   const handleReset = () => {
@@ -98,7 +135,7 @@ export default function Home() {
         {state === 'loading' && (
           <div className="row justify-content-center">
             <div className="col-12 col-md-6 text-center">
-              <LoadingState />
+              <LoadingState onCancel={handleCancel} />
             </div>
           </div>
         )}

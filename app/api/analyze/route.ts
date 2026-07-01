@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
     const response = await fetch(N8N_WEBHOOK, {
       method: 'POST',
       body: formData,
-      signal: AbortSignal.timeout(300_000),
+      // Прекратяване, ако клиентът се разкачи (Прекрати търсенето) ИЛИ при 5-мин таймаут.
+      signal: AbortSignal.any([req.signal, AbortSignal.timeout(300_000)]),
     });
 
     if (!response.ok) {
@@ -40,6 +41,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'TIMEOUT', message: 'Анализът отне прекалено много време (над 5 мин). Опитайте с по-малко дни назад.' },
         { status: 504 }
+      );
+    }
+    // Клиентът е прекратил търсенето — освобождаваме lock-а (finally) и излизаме тихо.
+    if (err instanceof Error && err.name === 'AbortError') {
+      return NextResponse.json(
+        { success: false, error: 'ABORTED', message: 'Търсенето е прекратено.' },
+        { status: 499 }
       );
     }
     console.error('Analyze route error:', err);

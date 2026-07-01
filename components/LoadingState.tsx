@@ -11,7 +11,7 @@ const MESSAGES = [
   'Почти готово...',
 ];
 
-export default function LoadingState() {
+export default function LoadingState({ onCancel }: { onCancel?: () => void }) {
   const [msgIndex, setMsgIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [elapsed, setElapsed] = useState(0);
@@ -69,6 +69,19 @@ export default function LoadingState() {
           />
         </div>
       </div>
+
+      {onCancel && (
+        <div className="mt-4">
+          <button
+            type="button"
+            className="cancel-search-btn"
+            onClick={onCancel}
+          >
+            <i className="bi bi-x-circle" />
+            Прекрати търсенето
+          </button>
+        </div>
+      )}
     </div>
   );
 }
