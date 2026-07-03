@@ -105,13 +105,44 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
           <p className="small">Опитай с по-широки предпочитания или по-голям брой дни</p>
         </div>
       ) : (
-        <div className="row g-3 jobs-grid">
-          {jobs.map((job, i) => (
-            <div key={i} className="col-12 col-md-6 col-xl-4">
-              <JobCard job={job} />
+        <>
+          {/* Score legend — a scale showing what the % and colours mean */}
+          <div className="score-legend">
+            <span className="score-legend-intro">
+              <i className="bi bi-info-circle" />
+              Оценката отразява съвпадението по умения, опит и технологии:
+            </span>
+            <div className="score-scale">
+              <div className="score-scale-bar" aria-hidden="true">
+                <span className="seg seg-partial" />
+                <span className="seg seg-good" />
+                <span className="seg seg-excellent" />
+              </div>
+              <div className="score-scale-labels">
+                <span className="scale-label lbl-partial">
+                  <span className="sl-word">Частично</span>
+                  <span className="sl-range">0–49%</span>
+                </span>
+                <span className="scale-label lbl-good">
+                  <span className="sl-word">Добро</span>
+                  <span className="sl-range">50–74%</span>
+                </span>
+                <span className="scale-label lbl-excellent">
+                  <span className="sl-word">Отлично</span>
+                  <span className="sl-range">75–100%</span>
+                </span>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+
+          <div className="row g-3 jobs-grid">
+            {jobs.map((job, i) => (
+              <div key={i} className="col-12 col-md-6 col-xl-4">
+                <JobCard job={job} />
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <div id="cv-review-anchor">

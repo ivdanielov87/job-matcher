@@ -64,7 +64,7 @@ export default function OgImage() {
             Намери IT работа, съобразена с твоето CV
           </div>
           <div style={{ display: 'flex', color: '#9fb2d8', fontSize: 32, maxWidth: 860 }}>
-            AI оценява обявите от dev.bg спрямо твоя стек, умения и опит.
+            AI оценява обявите от dev.bg спрямо твоя профил, умения и опит.
           </div>
         </div>
 

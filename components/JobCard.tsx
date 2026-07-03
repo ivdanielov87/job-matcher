@@ -24,15 +24,29 @@ function formatDate(dateStr: string): string {
 // Обяви от последните 3 календарни дни се маркират като нови.
 const NEW_JOB_DAYS = 3;
 
-function isRecent(dateStr: string): boolean {
-  if (!dateStr) return false;
+// Whole-day difference between today and the posting date (UTC-normalized), or null.
+function daysAgo(dateStr: string): number | null {
+  if (!dateStr) return null;
   const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return false;
+  if (Number.isNaN(d.getTime())) return null;
   const now = new Date();
   const startOfToday = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
   const postedDay = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
-  const daysAgo = Math.round((startOfToday - postedDay) / 86_400_000);
-  return daysAgo >= 0 && daysAgo <= NEW_JOB_DAYS;
+  return Math.round((startOfToday - postedDay) / 86_400_000);
+}
+
+function isRecent(dateStr: string): boolean {
+  const n = daysAgo(dateStr);
+  return n != null && n >= 0 && n <= NEW_JOB_DAYS;
+}
+
+// Relative label used ONLY for recent (new) jobs; older ones keep the absolute date.
+function relativeDate(dateStr: string): string {
+  const n = daysAgo(dateStr);
+  if (n == null) return formatDate(dateStr);
+  if (n <= 0) return 'днес';
+  if (n === 1) return 'вчера';
+  return `преди ${n} дни`;
 }
 
 export default function JobCard({ job }: { job: Job }) {
@@ -104,7 +118,7 @@ export default function JobCard({ job }: { job: Job }) {
         {/* Main stack of the role */}
         <div className="main-stack-line">
           <i className="bi bi-bullseye me-1" />
-          <span className="main-stack-label">Главен стек:</span>{' '}
+          <span className="main-stack-label">Главни технологии:</span>{' '}
           {job.main_stack && job.main_stack.length > 0 ? (
             job.main_stack.join(', ')
           ) : (
@@ -161,7 +175,7 @@ export default function JobCard({ job }: { job: Job }) {
           <span className="job-date-wrap">
             <span className="job-date">
               <i className="bi bi-calendar3 me-1" />
-              {formatDate(job.date_posted)}
+              {isRecent(job.date_posted) ? relativeDate(job.date_posted) : formatDate(job.date_posted)}
             </span>
             {isRecent(job.date_posted) && (
               <span className="job-new-badge">

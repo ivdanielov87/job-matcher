@@ -14,7 +14,7 @@ const siteUrl =
 
 const title = 'CV Job Matcher — AI подбор на IT обяви по твоето CV';
 const description =
-  'Качи своето CV и AI ще открие най-подходящите IT обяви от dev.bg, оценени спрямо твоите умения, стек и опит. Бързо, безплатно и на български.';
+  'Качи своето CV и AI ще открие най-подходящите IT обяви от dev.bg, оценени спрямо твоя профил, умения и опит. Бързо, безплатно и на български.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

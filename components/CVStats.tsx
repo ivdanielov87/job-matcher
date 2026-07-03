@@ -56,13 +56,13 @@ export default function CVStats({ stats }: { stats?: SearchStats }) {
     { value: stats.total_listings, label: 'В dev.bg', icon: 'bi-collection', tone: 'neutral' },
     { value: stats.in_period, label: 'За периода', icon: 'bi-calendar3', tone: 'neutral' },
     ...(stats.from_core_stack != null
-      ? [{ value: stats.from_core_stack, label: 'В твоя стек', icon: 'bi-stack', tone: 'neutral' }]
+      ? [{ value: stats.from_core_stack, label: 'По профила', icon: 'bi-stack', tone: 'neutral' }]
       : []),
     ...(stats.evaluated != null
       ? [{ value: stats.evaluated, label: 'Оценени', icon: 'bi-search', tone: 'neutral' }]
       : []),
     { value: stats.matched, label: 'Съвпадения', icon: 'bi-check-circle', tone: 'good' },
-    { value: stats.below_threshold, label: 'Под прага', icon: 'bi-dash-circle', tone: 'muted' },
+    { value: stats.below_threshold, label: 'Под прага', icon: 'bi-dash-circle', tone: 'bad' },
   ];
 
   const core = stats.stack_core ?? [];
@@ -126,7 +126,7 @@ export default function CVStats({ stats }: { stats?: SearchStats }) {
 
             {stats.from_core_stack != null && (
               <li>
-                <strong>{stats.from_core_stack}</strong> от тях съвпадат с главния ти стек
+                <strong>{stats.from_core_stack}</strong> от тях съвпадат с главните ти технологии
                 {stats.primary_stack && stats.primary_stack.length > 0 && (
                   <> ({stats.primary_stack.join(', ')})</>
                 )}
@@ -163,7 +163,7 @@ export default function CVStats({ stats }: { stats?: SearchStats }) {
                 <ul className="stack-legend">
                   <li className="stack-legend-heading">
                     <i className="bi bi-person-badge" />
-                    Твоят стек
+                    Твоят профил
                   </li>
                   {core.length > 0 && (
                     <li>

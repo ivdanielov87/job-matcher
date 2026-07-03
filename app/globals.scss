@@ -928,6 +928,14 @@ html, body {
       .stat-value, .stat-label i { color: var(--bs-success); }
       .stat-label { opacity: 0.85; }
     }
+
+    // Softly red — jobs that didn't reach the score threshold.
+    &.stat-bad {
+      background: rgba(var(--bs-danger-rgb), 0.07);
+      border-color: rgba(var(--bs-danger-rgb), 0.25);
+      .stat-value, .stat-label i { color: var(--bs-danger); }
+      .stat-label { opacity: 0.85; }
+    }
   }
 
   // "Compare by" legend — the candidate's stack, so it's clear what we match against.
@@ -1176,6 +1184,77 @@ html, body {
   .cv-review .card-body { padding: 1.15rem 1.15rem; }
   .cv-review .cv-review-title { font-size: 1.05rem; }
   .cv-review .cv-review-badge { width: 2.3rem; height: 2.3rem; font-size: 1rem; }
+}
+
+// ── Score legend — a scale (progress-bar style) of what the % / colours mean ─────
+.score-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 1.1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.6rem;
+  background: rgba(var(--bs-secondary-rgb), 0.05);
+  border: 1px solid var(--bs-border-color);
+  font-size: 0.8rem;
+
+  .score-legend-intro {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--bs-secondary-color);
+    i { color: var(--bs-primary); font-size: 0.9rem; }
+  }
+
+  .score-scale { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  // Segmented gauge: small gaps + rounded segments for a clean, modern look.
+  // Widths are proportional to the real score ranges (partial 0–49 ≈ half the
+  // scale, good & excellent a quarter each).
+  .score-scale-bar {
+    display: flex;
+    gap: 3px;
+    height: 6px;
+
+    .seg {
+      display: block;
+      height: 100%;
+      border-radius: 3px;
+    }
+    .seg-partial   { flex: 50 0 0; background: var(--score-partial); }
+    .seg-good      { flex: 25 0 0; background: var(--score-good); }
+    .seg-excellent { flex: 25 0 0; background: var(--score-excellent); }
+  }
+
+  // Labels sit under their segment, same proportional widths so they line up.
+  // The bar above carries the colour, so labels stay neutral for a clean read.
+  .score-scale-labels {
+    display: flex;
+    gap: 3px;
+
+    .scale-label {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+
+      .sl-word { font-weight: 600; color: var(--bs-body-color); }
+      .sl-range { font-size: 0.72rem; opacity: 0.55; }
+    }
+    .lbl-partial   { flex: 50 0 0; }
+    .lbl-good      { flex: 25 0 0; }
+    .lbl-excellent { flex: 25 0 0; }
+  }
+
+  @media (max-width: 575px) {
+    font-size: 0.76rem;
+    padding: 0.6rem 0.7rem;
+
+    .score-legend-intro { font-size: 0.74rem; }
+    .score-scale-labels {
+      .sl-word { font-size: 0.71rem; }
+      .sl-range { font-size: 0.65rem; }
+    }
+  }
 }
 
 // ── Jobs list spacing + jump-to-recommendations + scroll-to-top ─────────────────

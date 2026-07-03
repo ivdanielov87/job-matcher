@@ -1,7 +1,10 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { FormData } from '@/types';
+
+// Remember the user's search preferences (location / days / email) across visits.
+const PREFS_KEY = 'cvjm:prefs';
 
 interface Props {
   onSubmit: (file: File, form: FormData) => void;
@@ -21,6 +24,23 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
     email: '',
   });
   const [error, setError] = useState('');
+
+  // Load saved preferences on mount (client-only, so no hydration mismatch).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PREFS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Partial<FormData>;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm((f) => ({
+        location: saved.location ?? f.location,
+        days_back: saved.days_back ?? f.days_back,
+        email: saved.email ?? f.email,
+      }));
+    } catch {
+      /* ignore malformed / unavailable storage */
+    }
+  }, []);
 
   const handleFile = (f: File) => {
     if (f.size > 5 * 1024 * 1024) {
@@ -49,6 +69,12 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
       return;
     }
     setError('');
+    // Persist preferences for next time (not the file itself).
+    try {
+      localStorage.setItem(PREFS_KEY, JSON.stringify(form));
+    } catch {
+      /* storage unavailable — non-fatal */
+    }
     onSubmit(file, form);
   };
 
@@ -67,8 +93,17 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
           >
             <input
               type="file"
-              accept=".pdf,application/pdf"
-              onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
+              // Strict MIME hint so mobile opens the documents picker directly
+              // (a generic chooser may offer camera/gallery, which need media
+              // permissions and can hang the picker). Actual validation is in JS.
+              accept="application/pdf"
+              onChange={e => {
+                const f = e.target.files?.[0];
+                // Clear the value so a subsequent pick works even if a previous
+                // picker was cancelled or hung (mobile re-open reliability).
+                e.target.value = '';
+                if (f) handleFile(f);
+              }}
               onClick={e => e.stopPropagation()}
             />
             {file ? (
