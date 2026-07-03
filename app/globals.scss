@@ -1199,6 +1199,16 @@ html, body {
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease;
 
+  // Lighter warm "lit bulb" tone. A tight warm-dark contour keeps the glyph crisp
+  // so the soft glow behind it doesn't wash out its edges. Professional, not loud.
+  .bi-lightbulb-fill {
+    color: #ffd45e;
+    text-shadow:
+      0 0 1px rgba(140, 84, 0, 0.9),
+      0 1px 1px rgba(120, 72, 0, 0.55),
+      0 0 7px rgba(255, 196, 61, 0.35);
+  }
+
   &:hover {
     background: rgba(var(--bs-primary-rgb), 0.16);
     border-color: rgba(var(--bs-primary-rgb), 0.4);

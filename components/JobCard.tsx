@@ -37,7 +37,8 @@ function isRecent(dateStr: string): boolean {
 
 export default function JobCard({ job }: { job: Job }) {
   const cls = scoreClass(job.score);
-  const sourceClass = job.source ? `source-${job.source.replace('.', '-')}` : '';
+  // Restore alongside the source badge below when a second job source is added.
+  // const sourceClass = job.source ? `source-${job.source.replace('.', '-')}` : '';
 
   return (
     <div className={`job-card card ${cls}`}>
@@ -62,12 +63,15 @@ export default function JobCard({ job }: { job: Job }) {
               >
                 <span className="score-badge-inner">{job.score}%</span>
               </div>
-              {job.source && (
+              {/* Source badge hidden while we only pull from a single site (dev.bg).
+                  Restore this once a second source is added, so users can see which
+                  site each job came from. */}
+              {/* {job.source && (
                 <span className={`source-badge ${sourceClass}`}>
                   <i className="bi bi-globe2" />
                   {job.source}
                 </span>
-              )}
+              )} */}
             </div>
           </div>
           <div className="mt-1">
