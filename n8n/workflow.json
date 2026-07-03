@@ -20,7 +20,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        240,
+        256,
         112
       ],
       "webhookId": "0a020a74-8fb9-46c0-b12f-a06144d71de8"
@@ -69,17 +69,17 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        464,
+        432,
         112
       ]
     },
     {
       "parameters": {
-        "text": "={{ $json.text }}",
+        "text": "={{ 'Current date: ' + $now.toFormat('yyyy-MM-dd') + '\\n\\n===== CANDIDATE CV =====\\n' + $json.text }}",
         "schemaType": "fromJson",
-        "jsonSchemaExample": "{\"skills\": [\"JavaScript\", \"Node.js\", \"PostgreSQL\"], \"programming_languages\": [\"JavaScript\", \"Python\"], \"primary_languages\": [\"JavaScript\"], \"frameworks\": [\"Express\", \"React\"], \"tools\": [\"Docker\", \"Git\", \"AWS\"], \"spoken_languages\": [\"English\", \"Bulgarian\"], \"experience_level\": \"Mid\", \"job_type\": \"Backend\", \"years_of_experience\": 4, \"job_titles\": [\"Backend Developer\", \"Software Engineer\"]}",
+        "jsonSchemaExample": "{\"skills\": [\"JavaScript\", \"Node.js\", \"PostgreSQL\"], \"programming_languages\": [\"JavaScript\", \"Python\"], \"primary_languages\": [\"JavaScript\"], \"frameworks\": [\"Express\", \"React\"], \"primary_stack\": [\"JavaScript\", \"Node.js\", \"React\"], \"tools\": [\"Docker\", \"Git\", \"AWS\"], \"spoken_languages\": [\"English\", \"Bulgarian\"], \"experience_level\": \"Mid\", \"job_type\": \"Backend\", \"years_of_experience\": 4, \"job_titles\": [\"Backend Developer\", \"Software Engineer\"]}",
         "options": {
-          "systemPromptTemplate": "You are a careful CV analyst. Read the entire CV text thoroughly from beginning to end before extracting anything. Do not rush - accuracy matters.\n\nExtract the following fields:\n\nskills - ALL non-technical competencies and methodologies relevant to software development (e.g. Responsive Design, REST APIs, Clean architecture, Agile, Code review, Team leadership). Include only skills applicable to software roles. Do NOT include skills from unrelated non-technical positions. Do NOT put programming languages, frameworks or tools here.\n\nprogramming_languages - ALL programming and scripting languages found anywhere in the CV (e.g. JavaScript, TypeScript, Python, SQL, HTML, CSS, SCSS). Include markup and stylesheet languages.\n\nprimary_languages - the SUBSET of programming_languages the candidate has actually USED in professional work experience. Judge from the employment / work-history section and job titles (e.g. a role titled \"Java Developer\", or several years building in a language). EXCLUDE languages only listed as \"familiar with\", or appearing solely in a skills list with no backing work experience. If genuinely unsure, include the languages tied to the candidate's main roles.\n\nframeworks - ALL frameworks, libraries and runtimes (e.g. Angular, React, Node.js, RxJS, Spring Boot, .NET, Express). Include even those mentioned briefly.\n\ntools - ALL tools, platforms, services and databases (e.g. Git, Docker, Jira, Figma, AWS, PostgreSQL, Azure, Webpack). Include anything mentioned in a tools or tech stack section.\n\nspoken_languages - ALL human languages mentioned anywhere in the CV, including those with a proficiency level (e.g. English B2, Bulgarian native). Never omit these.\n\nexperience_level - infer from total years of relevant technical professional experience: Junior = 0-2 years, Mid = 2-5 years, Senior = 5-10 years, Lead = 10+ years.\n\njob_type - the candidate's PRIMARY specialisation. Choose ONE: Backend, Frontend, Fullstack, QA, Mobile, DevOps, Data. Base this on the majority of work history and the dominant skill set. If there is strong experience in both Frontend and Backend, choose Fullstack.\n\nyears_of_experience - total years of relevant technical/software professional experience as an integer. Count only tech/software roles.\n\njob_titles - all professional titles held, taken from the work history section.\n\nImportant: be exhaustive. If something appears only once in the CV it still counts. Read every section including summaries, project descriptions and tech stack lists before finalising your output."
+          "systemPromptTemplate": "You are a careful CV analyst. Read the entire CV text thoroughly from beginning to end before extracting anything. Do not rush - accuracy matters.\n\nExtract the following fields:\n\nskills - ALL non-technical competencies and methodologies relevant to software development (e.g. Responsive Design, REST APIs, Clean architecture, Agile, Code review, Team leadership). Include only skills applicable to software roles. Do NOT include skills from unrelated non-technical positions. Do NOT put programming languages, frameworks or tools here.\n\nprogramming_languages - ALL programming and scripting languages found anywhere in the CV (e.g. JavaScript, TypeScript, Python, SQL, HTML, CSS, SCSS). Include markup and stylesheet languages.\n\nprimary_languages - the SUBSET of programming_languages the candidate has actually USED in professional work experience. Judge from the employment / work-history section and job titles (e.g. a role titled \"Java Developer\", or several years building in a language). EXCLUDE languages only listed as \"familiar with\", or appearing solely in a skills list with no backing work experience. If genuinely unsure, include the languages tied to the candidate's main roles.\n\nframeworks - ALL frameworks, libraries and runtimes (e.g. Angular, React, Node.js, RxJS, Spring Boot, .NET, Express). Include even those mentioned briefly.\n\nprimary_stack - the 3 to 5 technologies that BEST DEFINE what the candidate builds with, judged from their WORK HISTORY and MOST RECENT roles (not from a bare skills list). Pick the languages, frameworks or defining tools most central to their engineering. Rules: (1) Weight recent and long-held experience most. If the candidate has worked substantially in more than one direction (e.g. both Angular and React), choose the DOMINANT / most-recent one; include both only if both are genuinely core to recent work. (2) Role-agnostic - for a Backend dev these are backend languages/frameworks (e.g. Java, Spring, PostgreSQL); for a Frontend dev the main FE stack (e.g. TypeScript, React, Next.js); for a QA the main testing frameworks/tools plus language (e.g. Java, Selenium, Cypress, Playwright); for Fullstack the dominant end. (3) EXCLUDE markup/styling and ubiquitous tech: HTML, CSS, SCSS, SASS, LESS, Tailwind, Bootstrap, jQuery, Git. (4) Order by centrality, most defining first.\n\ntools - ALL tools, platforms, services and databases (e.g. Git, Docker, Jira, Figma, AWS, PostgreSQL, Azure, Webpack). Include anything mentioned in a tools or tech stack section.\n\nspoken_languages - ALL human languages mentioned anywhere in the CV, including those with a proficiency level (e.g. English B2, Bulgarian native). Never omit these.\n\nexperience_level - infer from total years of relevant technical professional experience: Junior = 0-2 years, Mid = 2-5 years, Senior = 5-10 years, Lead = 10+ years.\n\nyears_of_experience - total years of professional software/technical experience, computed STRICTLY: (1) for each tech/software role take its duration from its start date to its end date; for a current/ongoing role use the Current date given at the top of the input. (2) Count internships, part-time, freelance and student jobs at HALF their duration. (3) If two or more roles OVERLAP in time, count the overlapping period only ONCE - never sum concurrent roles. (4) Do NOT count non-technical roles (e.g. waiter, teacher, sales) or education/study time. (5) Sum the durations, then ROUND DOWN to a whole integer. If dates are missing or unclear, make a conservative estimate and round down. Output that integer.\n\njob_titles - all professional titles held, taken from the work history section.\n\nImportant: be exhaustive. If something appears only once in the CV it still counts. Read every section including summaries, project descriptions and tech stack lists before finalising your output."
         }
       },
       "id": "c2ea4037-65b5-45a9-8824-a0dc63b59bfb",
@@ -87,7 +87,7 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        704,
+        784,
         112
       ],
       "retryOnFail": true,
@@ -96,14 +96,14 @@
     },
     {
       "parameters": {
-        "jsCode": "const cvProfile = $input.first().json.output;\nconst prefs = $('Normalize Input').first().json;\n\nconst urlMap = {\n  'Backend':  'https://dev.bg/company/jobs/back-end-development/',\n  'Frontend': 'https://dev.bg/company/jobs/front-end-development/',\n  'Fullstack': 'https://dev.bg/company/jobs/full-stack-development/',\n  'QA':       'https://dev.bg/company/jobs/quality-assurance/',\n  'Mobile':   'https://dev.bg/company/jobs/mobile/',\n  'DevOps':   'https://dev.bg/company/jobs/infrastructure/',\n  'Data':     'https://dev.bg/company/jobs/data-science-and-analytics/'\n};\n\nconst categoryMap = {\n  'Backend':  ['Backend', 'Fullstack'],\n  'Frontend': ['Frontend', 'Fullstack'],\n  'Fullstack': ['Backend', 'Frontend', 'Fullstack'],\n  'QA':       ['QA'],\n  'Mobile':   ['Mobile'],\n  'DevOps':   ['DevOps'],\n  'Data':     ['Data']\n};\n\nconst locationMap = {\n  'Remote':       'remote',\n  'София':        'sofiya',\n  'Пловдив':      'plovdiv',\n  'Варна':        'varna',\n  'Бургас':       'burgas',\n  'Русе':         'ruse',\n  'Стара Загора': 'stara-zagora'\n};\n\nconst jobType = cvProfile?.job_type || 'Backend';\nconst categories = categoryMap[jobType] || [jobType];\nconst locationSlug = locationMap[prefs.location];\n\nconst cvProfileData = {\n  skills:                cvProfile?.skills || [],\n  programming_languages: cvProfile?.programming_languages || [],\n  primary_languages:     cvProfile?.primary_languages || [],\n  frameworks:            cvProfile?.frameworks || [],\n  tools:                 cvProfile?.tools || [],\n  spoken_languages:      cvProfile?.spoken_languages || [],\n  experience_level:      cvProfile?.experience_level || 'Mid',\n  job_type:              jobType,\n  years_of_experience:   cvProfile?.years_of_experience || 0,\n  job_titles:            cvProfile?.job_titles || []\n};\n\n// One page-1 URL per category. Pagination (fetching the remaining pages) is handled in\n// \"Parse & Merge Categories\", which reads the real page count from each page-1 HTML.\nreturn categories.map(cat => {\n  const baseUrl = urlMap[cat];\n  const scrapeUrl = locationSlug\n    ? baseUrl + '?_job_location=' + encodeURIComponent(locationSlug)\n    : baseUrl;\n  return {\n    json: {\n      cv_profile:  cvProfileData,\n      scrape_url:  scrapeUrl,\n      category:    cat,\n      location:    prefs.location,\n      language:    prefs.language,\n      user_email:  prefs.user_email,\n      days_back:   prefs.days_back || 5\n    }\n  };\n});\n"
+        "jsCode": "const cvProfile = $input.first().json.output;\nconst prefs = $('Normalize Input').first().json;\n\nconst urlMap = {\n  'Backend':  'https://dev.bg/company/jobs/back-end-development/',\n  'Frontend': 'https://dev.bg/company/jobs/front-end-development/',\n  'Fullstack': 'https://dev.bg/company/jobs/full-stack-development/',\n  'QA':       'https://dev.bg/company/jobs/quality-assurance/',\n  'Mobile':   'https://dev.bg/company/jobs/mobile/',\n  'DevOps':   'https://dev.bg/company/jobs/infrastructure/',\n  'Data':     'https://dev.bg/company/jobs/data-science-and-analytics/'\n};\n\nconst categoryMap = {\n  'Backend':  ['Backend', 'Fullstack'],\n  'Frontend': ['Frontend', 'Fullstack'],\n  'Fullstack': ['Backend', 'Frontend', 'Fullstack'],\n  'QA':       ['QA'],\n  'Mobile':   ['Mobile'],\n  'DevOps':   ['DevOps'],\n  'Data':     ['Data']\n};\n\nconst locationMap = {\n  'Remote':       'remote',\n  'София':        'sofiya',\n  'Пловдив':      'plovdiv',\n  'Варна':        'varna',\n  'Бургас':       'burgas',\n  'Русе':         'ruse',\n  'Стара Загора': 'stara-zagora'\n};\n\n// The extractor's job_type SHOULD be one of our canonical categories, but the LLM sometimes\n// free-forms it (e.g. \"Full-Stack Web Developer\" instead of \"Fullstack\"). Normalize to a known\n// category so we never build an \"undefined\" scrape URL (which silently returns zero jobs).\nfunction normalizeJobType(raw){\n  const t = String(raw || '').toLowerCase();\n  if (/full[\\s-]?stack/.test(t)) return 'Fullstack';\n  if (/front[\\s-]?end/.test(t)) return 'Frontend';\n  if (/back[\\s-]?end/.test(t)) return 'Backend';\n  if (/\\bqa\\b|quality|tester|testing/.test(t)) return 'QA';\n  if (/mobile|android|\\bios\\b|flutter|react native/.test(t)) return 'Mobile';\n  if (/devops|\\bsre\\b|infrastructure|platform eng/.test(t)) return 'DevOps';\n  if (/data (scien|eng|analy)|analytic|machine learning|\\bml\\b/.test(t)) return 'Data';\n  const known = ['Backend','Frontend','Fullstack','QA','Mobile','DevOps','Data'];\n  return known.find(k => k.toLowerCase() === t) || 'Backend';\n}\nconst jobType = normalizeJobType(cvProfile?.job_type);\nconst categories = categoryMap[jobType] || [jobType];\nconst locationSlug = locationMap[prefs.location];\n\nconst cvProfileData = {\n  skills:                cvProfile?.skills || [],\n  programming_languages: cvProfile?.programming_languages || [],\n  primary_languages:     cvProfile?.primary_languages || [],\n  primary_stack:         cvProfile?.primary_stack || [],\n  frameworks:            cvProfile?.frameworks || [],\n  tools:                 cvProfile?.tools || [],\n  spoken_languages:      cvProfile?.spoken_languages || [],\n  experience_level:      cvProfile?.experience_level || 'Mid',\n  job_type:              jobType,\n  years_of_experience:   cvProfile?.years_of_experience || 0,\n  job_titles:            cvProfile?.job_titles || []\n};\n\n// One page-1 URL per category. Pagination (fetching the remaining pages) is handled in\n// \"Parse & Merge Categories\", which reads the real page count from each page-1 HTML.\nreturn categories.map(cat => {\n  const baseUrl = urlMap[cat];\n  const scrapeUrl = locationSlug\n    ? baseUrl + '?_job_location=' + encodeURIComponent(locationSlug)\n    : baseUrl;\n  return {\n    json: {\n      cv_profile:  cvProfileData,\n      scrape_url:  scrapeUrl,\n      category:    cat,\n      location:    prefs.location,\n      language:    prefs.language,\n      user_email:  prefs.user_email,\n      days_back:   prefs.days_back || 5\n    }\n  };\n});\n"
       },
       "id": "9f14d416-5abc-40e5-9ad8-167f91a13947",
       "name": "Build dev.bg Target URL",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        976,
+        1056,
         112
       ]
     },
@@ -132,7 +132,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        1152,
+        1232,
         112
       ],
       "retryOnFail": true,
@@ -154,8 +154,8 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        3360,
-        96
+        1712,
+        464
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -178,8 +178,8 @@
       "type": "n8n-nodes-base.sort",
       "typeVersion": 1,
       "position": [
-        3824,
-        96
+        2176,
+        464
       ],
       "alwaysOutputData": true
     },
@@ -194,8 +194,8 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        4000,
-        96
+        2336,
+        464
       ],
       "alwaysOutputData": true
     },
@@ -254,8 +254,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        4640,
-        96
+        3152,
+        464
       ]
     },
     {
@@ -286,29 +286,9 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        4816,
-        96
+        3504,
+        464
       ]
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $('Build dev.bg Target URL').first().json.user_email }}",
-        "subject": "={{ \"CV Job Matcher — \" + $(\"Build Final Response\").first().json.total + \" подходящи обяви намерени\" }}",
-        "message": "={{ \"<h2>Намерихме \" + $(\"Build Final Response\").first().json.total + \" подходящи обяви!</h2><ul>\" + $(\"Build Final Response\").first().json.jobs.map(function(j) { return \"<li><strong>\" + j.title + \"</strong> — \" + j.company + \"<br>Съвпадение: <b>\" + j.score + \"%</b><br>\" + (j.summary || \"\") + \"<br><a href='\" + j.url + \"'>Виж обявата →</a></li>\"; }).join(\"\") + \"</ul>\" }}",
-        "options": {
-          "appendAttribution": false
-        }
-      },
-      "id": "0d57e652-b0bd-4120-a4ae-7ce193d544d3",
-      "name": "Send Results Email",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        4992,
-        -48
-      ],
-      "webhookId": "782e0508-a7fd-44d1-b441-e13c8e4de2fe",
-      "disabled": true
     },
     {
       "parameters": {
@@ -321,8 +301,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        5168,
-        112
+        3696,
+        464
       ]
     },
     {
@@ -334,8 +314,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
-        432
+        256,
+        496
       ]
     },
     {
@@ -367,8 +347,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        480,
-        432
+        416,
+        496
       ]
     },
     {
@@ -384,8 +364,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        592,
-        608
+        528,
+        672
       ]
     },
     {
@@ -417,8 +397,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1120,
-        400
+        1104,
+        464
       ]
     },
     {
@@ -434,8 +414,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        864,
-        608
+        848,
+        672
       ]
     },
     {
@@ -467,7 +447,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1824,
+        1904,
         112
       ]
     },
@@ -484,8 +464,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1936,
-        304
+        2016,
+        272
       ]
     },
     {
@@ -497,7 +477,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1472,
+        1552,
         112
       ]
     },
@@ -510,7 +490,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2768,
+        2928,
         96
       ]
     },
@@ -523,8 +503,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3648,
-        96
+        2000,
+        464
       ]
     },
     {
@@ -537,7 +517,7 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        2016,
+        2224,
         96
       ]
     },
@@ -564,7 +544,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2192,
+        2384,
         96
       ]
     },
@@ -577,7 +557,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2368,
+        2544,
         96
       ]
     },
@@ -592,7 +572,7 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        2576,
+        2736,
         96
       ]
     },
@@ -605,20 +585,20 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1312,
+        1392,
         112
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Relevance pre-filter: rank every in-period listing by how its tech-tag set (\"icons\") overlaps\n// the candidate's stack, then keep the best MAX_JOBS for the expensive AI analysis. Ranking is\n// TWO-LEVEL: first by the number of CORE matches (the candidate's languages + frameworks), then\n// by AUX matches (tools) as a tie-breaker, then by date. So a job sharing more of the candidate's\n// core stack always ranks above one sharing fewer, regardless of incidental tool overlap.\n// Role-agnostic — a dev matches on languages/frameworks, a QA on its testing frameworks/tools.\n// Ubiquitous tags (version control, Agile ceremonies, human languages) are ignored. We pick the\n// 15 best-matching jobs — not the 15 most recent — so the strongest matches reach the scorer.\nconst item = $input.first();\nconst jobs = item.json.output?.jobs || [];\nconst cv = $('Build dev.bg Target URL').first().json.cv_profile || {};\n\nconst ALIASES = {'js':'javascript','ts':'typescript','postgres':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','spring framework':'spring','springboot':'spring boot'};\nconst norm = s => { const t = (s || '').toLowerCase().trim(); return ALIASES[t] || t; };\n\n// Candidate's stack, split into two tiers so a match on the CORE stack (the languages and\n// frameworks they actually build with) ranks a job higher than a match on a peripheral tool.\n// Role-agnostic: a QA's testing frameworks land in CORE, their tools in AUX — both still count.\nconst coreSet = new Set([\n  ...(cv.programming_languages || []),\n  ...(cv.frameworks || [])\n].map(norm).filter(Boolean));\nconst auxSet = new Set([\n  ...(cv.tools || []),\n  ...(cv.skills || [])\n].map(norm).filter(Boolean));\n\n// Non-discriminating tags: present on almost every listing, so they don't indicate fit.\nconst IGNORE = new Set([\n  'git', 'github', 'gitlab', 'bitbucket', 'svn',\n  'agile', 'scrum', 'kanban', 'jira', 'confluence',\n  'english', 'bulgarian', 'german', 'french', 'spanish', 'russian', 'italian',\n  'dutch', 'portuguese', 'polish', 'romanian', 'greek', 'turkish', 'ukrainian'\n].map(norm));\n\nfunction tagsOf(job) {\n  if (Array.isArray(job.tech_tags) && job.tech_tags.length) return job.tech_tags;\n  return String(job.description || '').replace('Tech stack:', '').split(',');\n}\n// Count DISTINCT shared technologies, split by tier: CORE (languages/frameworks) and AUX (tools).\nfunction tiers(job) {\n  let core = 0, aux = 0;\n  const seen = new Set();\n  for (const raw of tagsOf(job)) {\n    const t = norm(String(raw).trim());\n    if (!t || seen.has(t) || IGNORE.has(t)) continue;\n    seen.add(t);\n    if (coreSet.has(t)) core++;\n    else if (auxSet.has(t)) aux++;\n  }\n  return { core, aux };\n}\n\nconst MAX_JOBS = 15;\n// Two-level ranking: more CORE (language/framework) matches always wins; AUX (tool) matches\n// break ties; then date. So a job sharing 2 of the candidate's core techs always ranks above\n// one sharing only 1 — no matter how many incidental tools the latter shares.\nconst ranked = jobs\n  .map((job, i) => { const t = tiers(job); return { job, i, core: t.core, aux: t.aux }; })\n  .sort((a, b) => b.core - a.core || b.aux - a.aux || a.i - b.i);\n\nlet kept = ranked.filter(r => r.core > 0 || r.aux > 0).map(r => r.job);\n// Safety net: sparse/odd tagging left nothing overlapping → never return empty, keep recent.\nif (kept.length === 0) kept = jobs;\nkept = kept.slice(0, MAX_JOBS);\n\nreturn [{ json: { output: { jobs: kept } } }];\n"
+        "jsCode": "// Relevance pre-filter: rank every in-period listing by how its tech-tag set (\"icons\") overlaps\n// the candidate's stack, then keep the best matches for the expensive AI analysis. Ranking is\n// TWO-LEVEL: first by the number of MAIN matches (the candidate's defining stack — primary_stack:\n// the 3-5 languages/frameworks/tools they actually build with), then by SECONDARY matches\n// (everything else they know, incl. markup/styling and tools) as a tie-breaker, then by date.\n// A job needs at least ONE MAIN match to be evaluated at all — sharing only HTML/CSS or a tool\n// (e.g. Git, MySQL) is NOT enough. We DON'T pad to 15 with near-irrelevant listings; if the MAIN\n// matches are thin we top up to a small floor with the best secondary-only jobs, no further.\n// Role-agnostic — a dev matches on languages/frameworks, a QA on its testing frameworks/tools.\nconst item = $input.first();\nconst jobs = item.json.output?.jobs || [];\nconst cv = $('Build dev.bg Target URL').first().json.cv_profile || {};\n\nconst ALIASES = {'js':'javascript','ts':'typescript','postgres':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','spring framework':'spring','springboot':'spring boot','tailwind css':'tailwindcss','tailwind':'tailwindcss','scss/sass':'scss'};\nconst norm = s => { const t = (s || '').toLowerCase().trim(); return ALIASES[t] || t; };\n\n// Markup / styling / ubiquitous UI tech — never counts as MAIN, only as a secondary tie-breaker.\n// (A candidate's real coding direction is defined by languages/frameworks, not by HTML/CSS.)\nconst MARKUP = new Set(['html', 'css', 'scss', 'sass', 'less', 'tailwindcss', 'bootstrap', 'jquery'].map(norm));\n\n// MAIN = the candidate's defining stack (LLM-picked primary_stack), minus any markup that slipped in.\n// Fallback for older/cached profiles without primary_stack: professionally-used languages + frameworks.\nlet mainList = (cv.primary_stack || []).map(norm).filter(Boolean).filter(t => !MARKUP.has(t));\nif (mainList.length === 0) {\n  mainList = [...(cv.primary_languages || []), ...(cv.frameworks || [])].map(norm).filter(Boolean).filter(t => !MARKUP.has(t));\n}\nconst mainSet = new Set(mainList);\n\n// SECONDARY = everything else the candidate has (other languages/frameworks, tools, skills, and the\n// demoted markup). Used ONLY as a tie-breaker between jobs that already share a MAIN tech.\nconst secondarySet = new Set([\n  ...(cv.programming_languages || []),\n  ...(cv.frameworks || []),\n  ...(cv.tools || []),\n  ...(cv.skills || [])\n].map(norm).filter(Boolean).filter(t => !mainSet.has(t)));\n\n// Non-discriminating tags: present on almost every listing, so they don't indicate fit.\nconst IGNORE = new Set([\n  'git', 'github', 'gitlab', 'bitbucket', 'svn',\n  'agile', 'scrum', 'kanban', 'jira', 'confluence',\n  'english', 'bulgarian', 'german', 'french', 'spanish', 'russian', 'italian',\n  'dutch', 'portuguese', 'polish', 'romanian', 'greek', 'turkish', 'ukrainian'\n].map(norm));\n\nfunction tagsOf(job) {\n  if (Array.isArray(job.tech_tags) && job.tech_tags.length) return job.tech_tags;\n  return String(job.description || '').replace('Tech stack:', '').split(',');\n}\n// Count DISTINCT shared technologies, split by tier: MAIN (defining stack) and SECONDARY (the rest).\nfunction tiers(job) {\n  let main = 0, sec = 0;\n  const seen = new Set();\n  for (const raw of tagsOf(job)) {\n    const t = norm(String(raw).trim());\n    if (!t || seen.has(t) || IGNORE.has(t)) continue;\n    seen.add(t);\n    if (mainSet.has(t)) main++;\n    else if (secondarySet.has(t)) sec++;\n  }\n  return { main, sec };\n}\n\nconst MAX_JOBS = 15;   // hard ceiling sent to the scorer\nconst MIN_JOBS = 6;    // if MAIN matches are thinner than this, top up with secondary-only up to here\n\n// Two-level ranking: more MAIN matches always wins; SECONDARY breaks ties; then original order (date).\n// So a job sharing 2 of the candidate's defining techs always ranks above one sharing only 1.\nconst ranked = jobs\n  .map((job, i) => { const t = tiers(job); return { job, i, main: t.main, sec: t.sec }; })\n  .sort((a, b) => b.main - a.main || b.sec - a.sec || a.i - b.i);\n\n// Primary pool: jobs sharing >=1 MAIN tech — the real matches. Take up to MAX_JOBS.\nlet keptR = ranked.filter(r => r.main > 0).slice(0, MAX_JOBS);\n\n// If MAIN matches are too thin, top up ONLY up to MIN_JOBS (never to MAX_JOBS) with the best\n// secondary-only jobs — so we never pad the full list with near-irrelevant listings.\nif (keptR.length < MIN_JOBS) {\n  const secOnly = ranked.filter(r => r.main === 0 && r.sec > 0);\n  keptR = keptR.concat(secOnly.slice(0, MIN_JOBS - keptR.length));\n}\n\nlet kept = keptR.map(r => r.job);\n// Safety net: sparse/odd tagging left nothing overlapping → never return empty, keep most-recent.\nif (kept.length === 0) kept = jobs.slice(0, MAX_JOBS);\n\nreturn [{ json: { output: { jobs: kept } } }];\n"
       },
       "id": "55732e10-0b56-4123-b82d-b873130b68d5",
       "name": "Keyword Pre-Score",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1648,
+        1728,
         112
       ]
     },
@@ -636,20 +616,20 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        2928,
+        3248,
         96
       ]
     },
     {
       "parameters": {
-        "jsCode": "const jobs = $('Prepare Batch Input').first().json.jobs || [];\nconst cv = $('Prepare Batch Input').first().json.cv_profile;\nconst requirements = $input.first().json.output.requirements || [];\n\nconst cvAllTech = [...(cv.skills||[]), ...(cv.programming_languages||[]), ...(cv.frameworks||[]), ...(cv.tools||[])];\nconst cvAllTechLower = cvAllTech.map(s => s.toLowerCase().trim());\nconst hasTech = (n) => cvAllTechLower.some(t => t.includes(n));\n\nconst years = cv.years_of_experience || 0;\nconst level = (cv.experience_level || '').toLowerCase();\nconst jobType = (cv.job_type || '').toLowerCase();\nconst isMidPlus = ['mid','senior','lead'].includes(level) || years >= 3;\nconst hasAnyDb = ['postgresql','postgres','mysql','mariadb','oracle','sql server','mssql','sqlite','rds'].some(db => hasTech(db));\n\nconst IMPLIED = [\n  { s: 'Git',    w: () => isMidPlus },\n  { s: 'GitHub', w: () => isMidPlus },\n  { s: 'Maven',  w: () => hasTech('spring') },\n  { s: 'SQL',    w: () => ['backend','fullstack','full-stack','data'].includes(jobType) || hasAnyDb }\n];\nconst impliedSkills = [];\nfor (const r of IMPLIED) { if (r.w() && !cvAllTechLower.includes(r.s.toLowerCase())) impliedSkills.push(r.s); }\n\nconst LINEAGE = [\n  { w: () => hasTech('typescript') || hasTech('node'), a: 'JavaScript', src: () => hasTech('typescript') ? 'TypeScript' : 'Node.js' },\n  { w: () => hasTech('scss') || hasTech('sass'),       a: 'CSS',        src: () => hasTech('scss') ? 'SCSS' : 'SASS' },\n  { w: () => hasTech('spring'),                        a: 'Spring',     src: () => 'Spring' }\n];\nconst lineageSkills = [];\nconst derivedFrom = {};\nfor (const r of LINEAGE) { const al = r.a.toLowerCase(); if (r.w() && !cvAllTechLower.includes(al) && !lineageSkills.map(x=>x.toLowerCase()).includes(al)) { lineageSkills.push(r.a); derivedFrom[al] = r.src(); } }\n\nconst candidateSkills = [...cvAllTech, ...impliedSkills, ...lineageSkills];\n\nconst AWS_SERVICES = ['ec2','rds','s3','lambda','ecs','eks','dynamodb','cloudwatch','codedeploy','cloudformation','sqs','sns','cloudfront','elasticache','redshift','kinesis','fargate','opensearch'];\nconst CLOUD = [\n  { term: 'AWS',   prov: 'aws',   svc: AWS_SERVICES },\n  { term: 'Azure', prov: 'azure', svc: [] },\n  { term: 'GCP',   prov: 'gcp',   svc: ['google cloud','bigquery','gke'] }\n];\nfor (const c of CLOUD) {\n  if (cvAllTechLower.includes(c.term.toLowerCase())) continue;\n  const has = candidateSkills.some(s => {\n    const sl = s.toLowerCase().trim();\n    return sl === c.prov || sl.includes(c.prov) || c.svc.includes(sl);\n  });\n  if (has) candidateSkills.push(c.term);\n}\n\nconst spokenLangs = cv.spoken_languages || [];\n\nconst ALIASES = {'js':'javascript','ecmascript':'javascript','ts':'typescript','postgres':'postgresql','postgre':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','.net 8':'.net','.net framework':'.net','rest':'rest apis','rest api':'rest apis','restful apis':'rest apis','restful api':'rest apis'};\nfunction norm(s){ const t = (s||'').toLowerCase().trim(); return ALIASES[t] || t; }\nconst candidateNorm = candidateSkills.map(norm);\nconst candidateSet = new Set(candidateNorm);\nfunction langCovered(jobLang){ const jl = norm(jobLang); return spokenLangs.some(sl => norm(sl).includes(jl)); }\n\nconst primarySet = new Set((cv.primary_languages || []).map(norm));\nconst SECONDARY_LANG_CREDIT = 0.4;\n\nfunction skillBase(s){ return norm(String(s).split(' (')[0]); }\nfunction dedupSkills(arr){\n  const byBase = new Map();\n  for (const s of arr){\n    const str = String(s);\n    const annotated = str.includes(' (');\n    const base = skillBase(str);\n    if (!byBase.has(base)) { byBase.set(base, s); }\n    else { const ex = String(byBase.get(base)); if (ex.includes(' (') && !annotated) byBase.set(base, s); }\n  }\n  return [...byBase.values()];\n}\n\nconst FOUNDATIONAL = new Set(['git','github','gitlab','bitbucket','agile','scrum','kanban','jira','confluence'].map(norm));\nconst HUMAN_LANGS = new Set(['english','bulgarian','german','french','spanish','russian','italian','dutch','portuguese','polish','romanian','greek','turkish','ukrainian','czech','hungarian','croatian','serbian','arabic','chinese','japanese'].map(norm));\nconst LANGUAGES = new Set(['java','kotlin','go','python','c#','javascript','typescript','php','ruby','c++','c','rust','scala','swift','objective-c','perl','dart','elixir','clojure','groovy','f#','vb.net','lua','haskell','julia'].map(norm));\nconst FRONTEND_FRAMEWORKS = new Set(['react','angular','angularjs','vue.js','svelte','next.js','nuxt'].map(norm));\nconst isFrontendCandidate = ['frontend','fullstack','full-stack'].includes(jobType);\nconst techWeight = (t) => {\n  const n = norm(t);\n  if (LANGUAGES.has(n)) return 3;\n  if (isFrontendCandidate && FRONTEND_FRAMEWORKS.has(n)) return 2;\n  return 1;\n};\n\nconst MAIN_DISPLAY = {'java':'Java','kotlin':'Kotlin','go':'Go','python':'Python','c#':'C#','javascript':'JavaScript','typescript':'TypeScript','php':'PHP','ruby':'Ruby','c++':'C++','rust':'Rust','scala':'Scala','swift':'Swift','.net':'.NET','node.js':'Node.js','react':'React','angular':'Angular','vue.js':'Vue.js','spring':'Spring','django':'Django','laravel':'Laravel','blazor':'Blazor','dart':'Dart','elixir':'Elixir'};\nconst MAIN_KNOWN = new Set(Object.keys(MAIN_DISPLAY));\nconst MAIN_LANG_SET = new Set(['java','kotlin','go','python','c#','javascript','typescript','php','ruby','c++','rust','scala','swift','.net','dart','elixir']);\nconst FRONTEND_FW = new Set(['react','angular','vue.js','svelte'].map(norm));\nconst BACKEND_MS = new Set(['java','kotlin','go','python','c#','php','ruby','rust','scala','.net','node.js','elixir','c++'].map(norm));\nfunction detectMainStack(title, description){\n  const titleTokens = []; const tseen = new Set();\n  for (const tok of String(title || '').toLowerCase().split(/[^a-z0-9+#.]+/).filter(Boolean)){\n    const n = norm(tok); if (MAIN_KNOWN.has(n) && !tseen.has(n)){ tseen.add(n); titleTokens.push(n); }\n  }\n  const tLower = String(title || '').toLowerCase();\n  const roleFull  = /full[ \\-]?stack/.test(tLower);\n  const roleFront = /front[ \\-]?end/.test(tLower);\n  const roleBack  = /back[ \\-]?end/.test(tLower);\n  const iconTags = String(description || '').replace('Tech stack:', '').split(',').map(s => norm(s.trim())).filter(Boolean);\n  const pick = (set) => {\n    const fromTitle = titleTokens.find(t => set.has(t));\n    if (fromTitle) return fromTitle;\n    const inIcons = iconTags.filter(t => set.has(t));\n    return inIcons.length === 1 ? inIcons[0] : null;\n  };\n  const backend = pick(BACKEND_MS);\n  const frontend = pick(FRONTEND_FW);\n  let out;\n  if (roleFront)               out = [frontend || backend];\n  else if (roleBack)           out = [backend];\n  else if (roleFull)           out = [backend, frontend];\n  else if (titleTokens.length) out = titleTokens.slice(0, 2);\n  else                         out = [backend, frontend];\n  const seen = new Set(); const res = [];\n  for (const t of out){ if (t && !seen.has(t)){ seen.add(t); res.push(t); } }\n  return res.slice(0, 2);\n}\n\nconst COMPARABLE_PAIRS = [\n  ['Angular','React','Vue.js'],\n  ['Angular','AngularJS'],\n  ['Express','NestJS','Koa','Fastify'],\n  ['Django','FastAPI','Flask'],\n  ['Spring Boot','Quarkus','Micronaut'],\n  ['PostgreSQL','MySQL','MariaDB','Oracle','SQL Server','SQL'],\n  ['Hibernate','JPA','Spring Data'],\n  ['SCSS','SASS','Less'],\n  ['Jest','Mocha','Jasmine','Vitest'],\n  ['Cypress','Playwright','Selenium','WebdriverIO']\n];\nconst ALWAYS_COMPARABLE = new Set(['PostgreSQL','MySQL','MariaDB','Oracle','SQL Server','SQL','AngularJS'].map(norm));\nconst VERSION_LINEAGE = [['angular','angularjs']];\nfunction isLineage(a, b){ return VERSION_LINEAGE.some(p => p.includes(a) && p.includes(b) && a !== b); }\nfunction findComparable(reqTech, allowedNorm){\n  const rn = norm(reqTech);\n  if (!ALWAYS_COMPARABLE.has(rn) && !allowedNorm.includes(rn)) return null;\n  for (const pair of COMPARABLE_PAIRS){\n    const pl = pair.map(norm);\n    if (!pl.includes(rn)) continue;\n    for (let i=0;i<pair.length;i++){\n      if (pl[i]===rn) continue;\n      if (candidateSet.has(pl[i])){\n        const idx = candidateNorm.indexOf(pl[i]);\n        const cvTech = idx!==-1 ? candidateSkills[idx] : pair[i];\n        if (isLineage(rn, pl[i])) return `${reqTech} (имаш познания от ${cvTech})`;\n        return `${cvTech} (алтернатива на ${reqTech})`;\n      }\n    }\n  }\n  return null;\n}\n\nfunction levelRank(s){\n  const t = ' ' + (s||'').toLowerCase() + ' ';\n  if (t.includes('lead')||t.includes('principal')||t.includes('staff')||t.includes('chief')||t.includes('architect')||t.includes('head of')) return 4;\n  if (t.includes('senior')||t.includes('sr.')||t.includes('sr ')) return 3;\n  if (t.includes('middle')||t.includes('mid-')||t.includes('mid ')||t.includes('intermediate')||t.includes('regular')) return 2;\n  if (t.includes('junior')||t.includes('jr.')||t.includes('jr ')||t.includes('entry')||t.includes('graduate')||t.includes('trainee')||t.includes('intern')) return 1;\n  return 0;\n}\nconst candRank = levelRank(cv.experience_level);\nconst SHOW_THRESHOLD = 30;\n\nconst scored = requirements.map((req, i) => {\n  const allowedNorm = (req.accepts_alternatives_for || []).map(norm);\n  const matched = [];\n  const missing = [];\n\n  function coverTech(t){\n    const nt = norm(t);\n    if (candidateSet.has(nt)) {\n      if (LANGUAGES.has(nt) && primarySet.size > 0 && !primarySet.has(nt)) {\n        const src = derivedFrom[nt];\n        matched.push(src ? `${t} (имаш познания от ${src})` : `${t} (имаш познания)`);\n        return SECONDARY_LANG_CREDIT;\n      }\n      matched.push(t);\n      return 1;\n    }\n    const comp = findComparable(t, allowedNorm);\n    if (comp) { matched.push(comp); return 0.5; }\n    missing.push(t);\n    return 0;\n  }\n\n  const prefTech = req.preferred_tech || [];\n  const methods = req.methodologies || [];\n  const langs = req.human_languages || [];\n\n  const jobTags = String((jobs[i] || {}).description || '').replace('Tech stack:', '').split(',').map(s => s.trim()).filter(Boolean);\n  const knownNorm = new Set([...(req.required_tech || []), ...prefTech].map(norm));\n  const reqTech = [...(req.required_tech || [])];\n  for (const tag of jobTags) {\n    const tn = norm(tag);\n    if (!tn || knownNorm.has(tn) || HUMAN_LANGS.has(tn)) continue;\n    if ([...knownNorm].some(k => isLineage(tn, k))) continue;\n    knownNorm.add(tn); reqTech.push(tag);\n  }\n\n  for (const alt of (req.accepts_alternatives_for || [])) {\n    const an = norm(alt);\n    if (an && !knownNorm.has(an) && candidateSet.has(an)) { knownNorm.add(an); reqTech.push(alt); }\n  }\n\n  let aCovW = 0, aTotW = 0, coreCovW = 0, coreTotW = 0;\n  for (const t of reqTech){\n    const w = techWeight(t);\n    const c = coverTech(t);\n    aCovW += c * w; aTotW += w;\n    if (!FOUNDATIONAL.has(norm(t))) { coreTotW += w; coreCovW += c * w; }\n  }\n  const aScore = (aTotW ? aCovW/aTotW : 1) * 0.60;\n  const coreCoverage = coreTotW ? coreCovW/coreTotW : 1;\n\n  let bCov = 0; for (const t of prefTech) bCov += coverTech(t);\n  const bScore = (prefTech.length ? bCov/prefTech.length : 1) * 0.10;\n\n  const jobRank = Math.max(levelRank(req.experience_level), levelRank((jobs[i]||{}).title));\n  const meetsLevel = (candRank===0 || jobRank===0 || candRank>=jobRank);\n  const meetsYears = years >= (req.experience_years_min||0);\n  const expMatch = meetsLevel && meetsYears;\n  const expGrade = expMatch ? 1 : ((meetsLevel || meetsYears) ? 0.6 : 0.2);\n  const expScore = expGrade * 0.20;\n\n  let mlItems = 0, mlCov = 0;\n  for (const m of methods){ mlItems++; if (candidateSet.has(norm(m))){ mlCov++; matched.push(m); } else missing.push(m); }\n  for (const l of langs){ mlItems++; if (langCovered(l)){ mlCov++; matched.push(l); } else missing.push(l); }\n  const mlScore = (mlItems ? mlCov/mlItems : 1) * 0.10;\n\n  const mainStackNorm = detectMainStack((jobs[i] || {}).title, (jobs[i] || {}).description);\n  const mainLangs = mainStackNorm.filter(m => MAIN_LANG_SET.has(m));\n  const decisive = mainLangs.length ? mainLangs : mainStackNorm;\n  function coverMain(m){\n    if (candidateSet.has(m)){\n      if (LANGUAGES.has(m) && primarySet.size > 0 && !primarySet.has(m)) return 'weak';\n      return 'strong';\n    }\n    if (allowedNorm.includes(m)){\n      if ([...primarySet].some(p => allowedNorm.includes(p))) return 'strong';\n      if (allowedNorm.some(a => candidateSet.has(a))) return 'weak';\n    }\n    return 'none';\n  }\n  let mainFactor = 1;\n  if (decisive.length){\n    const covs = decisive.map(coverMain);\n    mainFactor = covs.includes('strong') ? 1 : (covs.includes('weak') ? 0.85 : 0.55);\n  }\n  let main_alt = '';\n  for (const m of decisive){\n    if (!candidateSet.has(m) && allowedNorm.includes(m)){\n      const p = [...primarySet].find(x => allowedNorm.includes(x));\n      if (p){ const idx = candidateNorm.indexOf(p); const have = idx !== -1 ? candidateSkills[idx] : p; main_alt = `${have} (приема се вместо ${MAIN_DISPLAY[m] || m})`; break; }\n    }\n  }\n  const main_stack = mainStackNorm.map(m => MAIN_DISPLAY[m] || m);\n\n  const raw = (aScore + bScore + expScore + mlScore) * 100;\n  const coreFactor = coreTotW === 0 ? 1 : Math.min(1, 0.3 + 1.4 * coreCoverage);\n  let score = Math.round(raw * coreFactor * mainFactor);\n  if (!expMatch) score = Math.max(0, score - 5);\n\n  const overqualified = candRank>0 && jobRank>0 && (candRank - jobRank >= 2);\n  const matchedFinal = dedupSkills(matched);\n  const matchedBases = new Set(matchedFinal.map(skillBase));\n  const missingFinal = dedupSkills(missing).filter(m => !matchedBases.has(skillBase(m)));\n  return { job_index: i+1, score, matched_skills: matchedFinal, missing_skills: missingFinal, experience_match: expMatch, main_stack, main_alt, _overq: overqualified };\n});\n\nconst toSummarize = scored.filter(s => s.score >= SHOW_THRESHOLD && !s._overq);\nconst summary_text = toSummarize.map(s => {\n  const job = jobs[s.job_index - 1] || {};\n  return 'JOB ' + s.job_index + ': ' + (job.title||'') + ' @ ' + (job.company||'') + '\\n' +\n    'Score: ' + s.score + '%\\n' +\n    'Matched: ' + (s.matched_skills.join(', ') || 'none') + '\\n' +\n    'Missing: ' + (s.missing_skills.join(', ') || 'none') + '\\n' +\n    'Experience match: ' + (s.experience_match ? 'yes' : 'no');\n}).join('\\n\\n') + '\\n\\nFor EACH job above, write ONE Bulgarian sentence summarising the key technical match or gap. Return exactly ' + toSummarize.length + ' entries, each with its job_index.';\n\nreturn [{ json: { summary_text, scored, jobs } }];\n"
+        "jsCode": "const jobs = $('Prepare Batch Input').first().json.jobs || [];\nconst cv = $('Prepare Batch Input').first().json.cv_profile;\nconst requirements = $input.first().json.output.requirements || [];\n\nconst cvAllTech = [...(cv.skills||[]), ...(cv.programming_languages||[]), ...(cv.frameworks||[]), ...(cv.tools||[])];\nconst cvAllTechLower = cvAllTech.map(s => s.toLowerCase().trim());\nconst hasTech = (n) => cvAllTechLower.some(t => t.includes(n));\n\nconst years = cv.years_of_experience || 0;\nconst level = (cv.experience_level || '').toLowerCase();\nconst jobType = (cv.job_type || '').toLowerCase();\nconst isMidPlus = ['mid','senior','lead'].includes(level) || years >= 3;\nconst hasAnyDb = ['postgresql','postgres','mysql','mariadb','oracle','sql server','mssql','sqlite','rds'].some(db => hasTech(db));\n\nconst IMPLIED = [\n  { s: 'Git',    w: () => isMidPlus },\n  { s: 'GitHub', w: () => isMidPlus },\n  { s: 'Maven',  w: () => hasTech('spring') },\n  { s: 'SQL',    w: () => ['backend','fullstack','full-stack','data'].includes(jobType) || hasAnyDb }\n];\nconst impliedSkills = [];\nfor (const r of IMPLIED) { if (r.w() && !cvAllTechLower.includes(r.s.toLowerCase())) impliedSkills.push(r.s); }\n\nconst LINEAGE = [\n  { w: () => hasTech('typescript') || hasTech('node'), a: 'JavaScript', src: () => hasTech('typescript') ? 'TypeScript' : 'Node.js' },\n  { w: () => hasTech('scss') || hasTech('sass'),       a: 'CSS',        src: () => hasTech('scss') ? 'SCSS' : 'SASS' },\n  { w: () => hasTech('spring'),                        a: 'Spring',     src: () => 'Spring' }\n];\nconst lineageSkills = [];\nconst derivedFrom = {};\nfor (const r of LINEAGE) { const al = r.a.toLowerCase(); if (r.w() && !cvAllTechLower.includes(al) && !lineageSkills.map(x=>x.toLowerCase()).includes(al)) { lineageSkills.push(r.a); derivedFrom[al] = r.src(); } }\n\nconst candidateSkills = [...cvAllTech, ...impliedSkills, ...lineageSkills];\n\nconst AWS_SERVICES = ['ec2','rds','s3','lambda','ecs','eks','dynamodb','cloudwatch','codedeploy','cloudformation','sqs','sns','cloudfront','elasticache','redshift','kinesis','fargate','opensearch'];\nconst CLOUD = [\n  { term: 'AWS',   prov: 'aws',   svc: AWS_SERVICES },\n  { term: 'Azure', prov: 'azure', svc: [] },\n  { term: 'GCP',   prov: 'gcp',   svc: ['google cloud','bigquery','gke'] }\n];\nfor (const c of CLOUD) {\n  if (cvAllTechLower.includes(c.term.toLowerCase())) continue;\n  const has = candidateSkills.some(s => {\n    const sl = s.toLowerCase().trim();\n    return sl === c.prov || sl.includes(c.prov) || c.svc.includes(sl);\n  });\n  if (has) candidateSkills.push(c.term);\n}\n\nconst spokenLangs = cv.spoken_languages || [];\n\nconst ALIASES = {'js':'javascript','ecmascript':'javascript','ts':'typescript','postgres':'postgresql','postgre':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','.net 8':'.net','.net framework':'.net','rest':'rest apis','rest api':'rest apis','restful apis':'rest apis','restful api':'rest apis','tailwind css':'tailwindcss','tailwind':'tailwindcss'};\nfunction norm(s){ const t = (s||'').toLowerCase().trim(); return ALIASES[t] || t; }\nconst candidateNorm = candidateSkills.map(norm);\nconst candidateSet = new Set(candidateNorm);\nfunction langCovered(jobLang){ const jl = norm(jobLang); return spokenLangs.some(sl => norm(sl).includes(jl)); }\n\nconst primarySet = new Set((cv.primary_languages || []).map(norm));\nconst SECONDARY_LANG_CREDIT = 0.4;\n\nfunction skillBase(s){ return norm(String(s).split(' (')[0]); }\nfunction dedupSkills(arr){\n  const byBase = new Map();\n  for (const s of arr){\n    const str = String(s);\n    const annotated = str.includes(' (');\n    const base = skillBase(str);\n    if (!byBase.has(base)) { byBase.set(base, s); }\n    else { const ex = String(byBase.get(base)); if (ex.includes(' (') && !annotated) byBase.set(base, s); }\n  }\n  return [...byBase.values()];\n}\n\nconst FOUNDATIONAL = new Set(['git','github','gitlab','bitbucket','agile','scrum','kanban','jira','confluence'].map(norm));\nconst HUMAN_LANGS = new Set(['english','bulgarian','german','french','spanish','russian','italian','dutch','portuguese','polish','romanian','greek','turkish','ukrainian','czech','hungarian','croatian','serbian','arabic','chinese','japanese'].map(norm));\nconst LANGUAGES = new Set(['java','kotlin','go','python','c#','javascript','typescript','php','ruby','c++','c','rust','scala','swift','objective-c','perl','dart','elixir','clojure','groovy','f#','vb.net','lua','haskell','julia'].map(norm));\nconst FRONTEND_FRAMEWORKS = new Set(['react','angular','angularjs','vue.js','svelte','next.js','nuxt'].map(norm));\nconst isFrontendCandidate = ['frontend','fullstack','full-stack'].includes(jobType);\nconst techWeight = (t) => {\n  const n = norm(t);\n  if (LANGUAGES.has(n)) return 3;\n  if (isFrontendCandidate && FRONTEND_FRAMEWORKS.has(n)) return 2;\n  return 1;\n};\n\nconst MAIN_DISPLAY = {'java':'Java','kotlin':'Kotlin','go':'Go','python':'Python','c#':'C#','javascript':'JavaScript','typescript':'TypeScript','php':'PHP','ruby':'Ruby','c++':'C++','rust':'Rust','scala':'Scala','swift':'Swift','.net':'.NET','node.js':'Node.js','react':'React','angular':'Angular','vue.js':'Vue.js','spring':'Spring','django':'Django','laravel':'Laravel','blazor':'Blazor','dart':'Dart','elixir':'Elixir'};\nconst MAIN_KNOWN = new Set(Object.keys(MAIN_DISPLAY));\nconst MAIN_LANG_SET = new Set(['java','kotlin','go','python','c#','javascript','typescript','php','ruby','c++','rust','scala','swift','.net','dart','elixir']);\nconst FRONTEND_FW = new Set(['react','angular','vue.js','svelte'].map(norm));\nconst BACKEND_MS = new Set(['java','kotlin','go','python','c#','php','ruby','rust','scala','.net','node.js','elixir','c++'].map(norm));\nfunction detectMainStack(title, description){\n  const titleTokens = []; const tseen = new Set();\n  for (const tok of String(title || '').toLowerCase().split(/[^a-z0-9+#.]+/).filter(Boolean)){\n    const n = norm(tok); if (MAIN_KNOWN.has(n) && !tseen.has(n)){ tseen.add(n); titleTokens.push(n); }\n  }\n  const tLower = String(title || '').toLowerCase();\n  const roleFull  = /full[ \\-]?stack/.test(tLower);\n  const roleFront = /front[ \\-]?end/.test(tLower);\n  const roleBack  = /back[ \\-]?end/.test(tLower);\n  const iconTags = String(description || '').replace('Tech stack:', '').split(',').map(s => norm(s.trim())).filter(Boolean);\n  const pick = (set) => {\n    const fromTitle = titleTokens.find(t => set.has(t));\n    if (fromTitle) return fromTitle;\n    const inIcons = iconTags.filter(t => set.has(t));\n    return inIcons.length === 1 ? inIcons[0] : null;\n  };\n  const backend = pick(BACKEND_MS);\n  const frontend = pick(FRONTEND_FW);\n  let out;\n  if (roleFront)               out = [frontend || backend];\n  else if (roleBack)           out = [backend];\n  else if (roleFull)           out = [backend, frontend];\n  else if (titleTokens.length) out = titleTokens.slice(0, 2);\n  else                         out = [backend, frontend];\n  const seen = new Set(); const res = [];\n  for (const t of out){ if (t && !seen.has(t)){ seen.add(t); res.push(t); } }\n  return res.slice(0, 2);\n}\n\nconst COMPARABLE_PAIRS = [\n  ['Angular','React','Vue.js'],\n  ['Angular','AngularJS'],\n  ['Express','NestJS','Koa','Fastify'],\n  ['Django','FastAPI','Flask'],\n  ['Spring Boot','Quarkus','Micronaut'],\n  ['PostgreSQL','MySQL','MariaDB','Oracle','SQL Server','SQL'],\n  ['Hibernate','JPA','Spring Data'],\n  ['SCSS','SASS','Less'],\n  ['Jest','Mocha','Jasmine','Vitest'],\n  ['Cypress','Playwright','Selenium','WebdriverIO']\n];\nconst ALWAYS_COMPARABLE = new Set(['PostgreSQL','MySQL','MariaDB','Oracle','SQL Server','SQL','AngularJS'].map(norm));\nconst VERSION_LINEAGE = [['angular','angularjs']];\nfunction isLineage(a, b){ return VERSION_LINEAGE.some(p => p.includes(a) && p.includes(b) && a !== b); }\nfunction findComparable(reqTech, allowedNorm){\n  const rn = norm(reqTech);\n  if (!ALWAYS_COMPARABLE.has(rn) && !allowedNorm.includes(rn)) return null;\n  for (const pair of COMPARABLE_PAIRS){\n    const pl = pair.map(norm);\n    if (!pl.includes(rn)) continue;\n    for (let i=0;i<pair.length;i++){\n      if (pl[i]===rn) continue;\n      if (candidateSet.has(pl[i])){\n        const idx = candidateNorm.indexOf(pl[i]);\n        const cvTech = idx!==-1 ? candidateSkills[idx] : pair[i];\n        if (isLineage(rn, pl[i])) return `${reqTech} (имаш познания от ${cvTech})`;\n        return `${cvTech} (алтернатива на ${reqTech})`;\n      }\n    }\n  }\n  return null;\n}\n\nfunction levelRank(s){\n  const t = ' ' + (s||'').toLowerCase() + ' ';\n  if (t.includes('lead')||t.includes('principal')||t.includes('staff')||t.includes('chief')||t.includes('architect')||t.includes('head of')) return 4;\n  if (t.includes('senior')||t.includes('sr.')||t.includes('sr ')) return 3;\n  if (t.includes('middle')||t.includes('mid-')||t.includes('mid ')||t.includes('intermediate')||t.includes('regular')) return 2;\n  if (t.includes('junior')||t.includes('jr.')||t.includes('jr ')||t.includes('entry')||t.includes('graduate')||t.includes('trainee')||t.includes('intern')) return 1;\n  return 0;\n}\n// Candidate seniority = level implied by TOTAL years (bands: <2 Junior, 2-5 Mid, 5-10 Senior, 10+ Lead),\n// falling back to the extractor's word if years are missing. Held titles may lift the level by AT MOST\n// one step above what the years imply (and never lower it) — credits real seniority without letting an\n// inflated title (e.g. \"Senior\" at 2 yrs) over-promote. If no title carries a seniority word, years win.\nfunction bandRank(y){ if (y >= 10) return 4; if (y >= 5) return 3; if (y >= 2) return 2; return 1; }\nconst yearsRank = (cv.years_of_experience > 0) ? bandRank(cv.years_of_experience) : levelRank(cv.experience_level);\nconst titleRank = Math.max(0, ...(cv.job_titles || []).map(levelRank));\nconst candRank = titleRank > 0 ? Math.max(yearsRank, Math.min(titleRank, yearsRank + 1)) : yearsRank;\nconst SHOW_THRESHOLD = 30;\n\nconst scored = requirements.map((req, i) => {\n  const allowedNorm = (req.accepts_alternatives_for || []).map(norm);\n  const matched = [];\n  const missing = [];\n\n  function coverTech(t){\n    const nt = norm(t);\n    if (candidateSet.has(nt)) {\n      if (LANGUAGES.has(nt) && primarySet.size > 0 && !primarySet.has(nt)) {\n        const src = derivedFrom[nt];\n        matched.push(src ? `${t} (имаш познания от ${src})` : `${t} (имаш познания)`);\n        return SECONDARY_LANG_CREDIT;\n      }\n      matched.push(t);\n      return 1;\n    }\n    const comp = findComparable(t, allowedNorm);\n    if (comp) { matched.push(comp); return 0.5; }\n    missing.push(t);\n    return 0;\n  }\n\n  const prefTech = req.preferred_tech || [];\n  const methods = req.methodologies || [];\n  const langs = req.human_languages || [];\n\n  const jobTags = String((jobs[i] || {}).description || '').replace('Tech stack:', '').split(',').map(s => s.trim()).filter(Boolean);\n  const knownNorm = new Set([...(req.required_tech || []), ...prefTech].map(norm));\n  const reqTech = [...(req.required_tech || [])];\n  for (const tag of jobTags) {\n    const tn = norm(tag);\n    if (!tn || knownNorm.has(tn) || HUMAN_LANGS.has(tn)) continue;\n    if ([...knownNorm].some(k => isLineage(tn, k))) continue;\n    knownNorm.add(tn); reqTech.push(tag);\n  }\n\n  for (const alt of (req.accepts_alternatives_for || [])) {\n    const an = norm(alt);\n    if (an && !knownNorm.has(an) && candidateSet.has(an)) { knownNorm.add(an); reqTech.push(alt); }\n  }\n\n  let aCovW = 0, aTotW = 0, coreCovW = 0, coreTotW = 0;\n  for (const t of reqTech){\n    const w = techWeight(t);\n    const c = coverTech(t);\n    aCovW += c * w; aTotW += w;\n    if (!FOUNDATIONAL.has(norm(t))) { coreTotW += w; coreCovW += c * w; }\n  }\n  const aScore = (aTotW ? aCovW/aTotW : 1) * 0.60;\n  const coreCoverage = coreTotW ? coreCovW/coreTotW : 1;\n\n  let bCov = 0; for (const t of prefTech) bCov += coverTech(t);\n  const bScore = (prefTech.length ? bCov/prefTech.length : 1) * 0.10;\n\n  const jobRank = Math.max(levelRank(req.experience_level), levelRank((jobs[i]||{}).title));\n  const meetsLevel = (candRank===0 || jobRank===0 || candRank>=jobRank);\n  const meetsYears = years >= (req.experience_years_min||0);\n  const expMatch = meetsLevel && meetsYears;\n  const expGrade = expMatch ? 1 : ((meetsLevel || meetsYears) ? 0.6 : 0.2);\n  const expScore = expGrade * 0.20;\n\n  let mlItems = 0, mlCov = 0;\n  for (const m of methods){ mlItems++; if (candidateSet.has(norm(m))){ mlCov++; matched.push(m); } else missing.push(m); }\n  for (const l of langs){ mlItems++; if (langCovered(l)){ mlCov++; matched.push(l); } else missing.push(l); }\n  const mlScore = (mlItems ? mlCov/mlItems : 1) * 0.10;\n\n  const mainStackNorm = detectMainStack((jobs[i] || {}).title, (jobs[i] || {}).description);\n  const mainLangs = mainStackNorm.filter(m => MAIN_LANG_SET.has(m));\n  const decisive = mainLangs.length ? mainLangs : mainStackNorm;\n  function coverMain(m){\n    if (candidateSet.has(m)){\n      if (LANGUAGES.has(m) && primarySet.size > 0 && !primarySet.has(m)) return 'weak';\n      return 'strong';\n    }\n    if (allowedNorm.includes(m)){\n      if ([...primarySet].some(p => allowedNorm.includes(p))) return 'strong';\n      if (allowedNorm.some(a => candidateSet.has(a))) return 'weak';\n    }\n    return 'none';\n  }\n  let mainFactor = 1;\n  if (decisive.length){\n    const covs = decisive.map(coverMain);\n    mainFactor = covs.includes('strong') ? 1 : (covs.includes('weak') ? 0.85 : 0.55);\n  }\n  let main_alt = '';\n  for (const m of decisive){\n    if (!candidateSet.has(m) && allowedNorm.includes(m)){\n      const p = [...primarySet].find(x => allowedNorm.includes(x));\n      if (p){ const idx = candidateNorm.indexOf(p); const have = idx !== -1 ? candidateSkills[idx] : p; main_alt = `${have} (приема се вместо ${MAIN_DISPLAY[m] || m})`; break; }\n    }\n  }\n  const main_stack = mainStackNorm.map(m => MAIN_DISPLAY[m] || m);\n\n  const raw = (aScore + bScore + expScore + mlScore) * 100;\n  const coreFactor = coreTotW === 0 ? 1 : Math.min(1, 0.3 + 1.4 * coreCoverage);\n  let score = Math.round(raw * coreFactor * mainFactor);\n  if (!expMatch) score = Math.max(0, score - 5);\n\n  const overqualified = candRank>0 && jobRank>0 && (candRank - jobRank >= 2);\n  const matchedFinal = dedupSkills(matched);\n  const matchedBases = new Set(matchedFinal.map(skillBase));\n  const missingFinal = dedupSkills(missing).filter(m => !matchedBases.has(skillBase(m)));\n  return { job_index: i+1, score, matched_skills: matchedFinal, missing_skills: missingFinal, experience_match: expMatch, main_stack, main_alt, _overq: overqualified };\n});\n\nconst toSummarize = scored.filter(s => s.score >= SHOW_THRESHOLD && !s._overq);\nconst summary_text = toSummarize.map(s => {\n  const job = jobs[s.job_index - 1] || {};\n  return 'JOB ' + s.job_index + ': ' + (job.title||'') + ' @ ' + (job.company||'') + '\\n' +\n    'Score: ' + s.score + '%\\n' +\n    'Matched: ' + (s.matched_skills.join(', ') || 'none') + '\\n' +\n    'Missing: ' + (s.missing_skills.join(', ') || 'none') + '\\n' +\n    'Experience match: ' + (s.experience_match ? 'yes' : 'no');\n}).join('\\n\\n') + '\\n\\nFor EACH job above, write ONE Bulgarian sentence summarising the key technical match or gap. Return exactly ' + toSummarize.length + ' entries, each with its job_index.';\n\nreturn [{ json: { summary_text, scored, jobs } }];\n"
       },
       "id": "e5af77aa-a7f2-4006-9784-59dc57ba6a09",
       "name": "Build Scoring Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3200,
+        3536,
         96
       ]
     },
@@ -662,8 +642,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        944,
-        400
+        928,
+        464
       ]
     },
     {
@@ -675,8 +655,8 @@
       "type": "@llamaindex/n8n-nodes-llamacloud.llamaParsePlatform",
       "typeVersion": 1,
       "position": [
-        752,
-        416
+        736,
+        480
       ],
       "onError": "continueErrorOutput"
     },
@@ -690,8 +670,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        1600,
-        432
+        944,
+        304
       ],
       "id": "e1aacd11-d879-43b2-8148-ffd0ab5fa55c",
       "name": "Google Gemini Chat Model"
@@ -706,8 +686,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        3088,
-        320
+        3392,
+        288
       ],
       "id": "1e75b6a9-ab0c-4229-b83d-2193317bb9be",
       "name": "Google Gemini Chat Model1"
@@ -722,8 +702,8 @@
       "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
       "typeVersion": 1,
       "position": [
-        3360,
-        304
+        1712,
+        656
       ],
       "id": "0ec681aa-90d8-4a60-8ed1-765788584c05",
       "name": "DeepSeek Chat Model1"
@@ -738,8 +718,8 @@
       "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
       "typeVersion": 1,
       "position": [
-        2928,
-        320
+        3248,
+        288
       ],
       "id": "74e977d9-dca0-4250-9568-7002c3e5e11f",
       "name": "DeepSeek Chat Model3"
@@ -754,23 +734,23 @@
       "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
       "typeVersion": 1,
       "position": [
-        1440,
-        432
+        784,
+        304
       ],
       "id": "67ee062c-9266-4c78-b298-eca49ff3fe5c",
       "name": "DeepSeek Chat Model4"
     },
     {
       "parameters": {
-        "jsCode": "// Deterministic CV \"market gap\" analysis: aggregates the skills that show up as MISSING\n// across the candidate's relevant (already-scored) jobs, so we can tell them which skills\n// would unlock the most opportunities. No LLM — pure aggregation of data we already have.\nconst jobs = $input.first().json.jobs || [];                    // passthrough from Aggregate\nconst scored = $('Build Scoring Input').first().json.scored || [];\nconst cv = $('Build dev.bg Target URL').first().json.cv_profile || {};\n\nconst ALIASES = {'js':'javascript','ts':'typescript','postgres':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net'};\nfunction norm(s){ const t = (s||'').toLowerCase().trim(); return ALIASES[t] || t; }\n\n// skills the candidate already has (exclude from gaps)\nconst cvTech = new Set([...(cv.skills||[]), ...(cv.programming_languages||[]), ...(cv.frameworks||[]), ...(cv.tools||[])].map(norm));\n// ubiquitous / non-tech things that aren't worth recommending\nconst FOUNDATIONAL = new Set(['git','github','gitlab','bitbucket','agile','scrum','kanban','jira','confluence','rest','rest apis','soap'].map(norm));\nconst HUMAN_LANGS = new Set(['english','bulgarian','german','french','spanish','russian','italian','dutch','polish','romanian','greek','turkish','ukrainian'].map(norm));\n\n// Aggregate the skills the candidate is missing across all relevant scored jobs.\nconst agg = {}; // norm -> { label, count, best }\nfor (const s of scored){\n  for (const raw of (s.missing_skills || [])){\n    const label = String(raw).split(' (')[0].trim();\n    const n = norm(label);\n    if (!n || cvTech.has(n) || FOUNDATIONAL.has(n) || HUMAN_LANGS.has(n)) continue;\n    if (!agg[n]) agg[n] = { label, count: 0, best: 0 };\n    agg[n].count++;\n    agg[n].best = Math.max(agg[n].best, s.score || 0);\n  }\n}\nconst all = Object.values(agg)\n  .map(g => ({ skill: g.label, jobs_count: g.count, best_score: g.best }))\n  .sort((a, b) => b.jobs_count - a.jobs_count || b.best_score - a.best_score);\n\n// Recommend skills wanted by 2+ jobs (a real market signal — one job's niche stack is noise).\n// If the pool is too scattered for any skill to repeat, fall back to the strongest few.\nlet market_gaps = all.filter(g => g.jobs_count >= 2);\nif (market_gaps.length === 0) market_gaps = all.slice(0, 3);\nmarket_gaps = market_gaps.slice(0, 5);\n\n// ---- Funnel statistics (transparency for the user) -----------------------\n// The full funnel, widest to narrowest:\n//   total_listings : ALL remote listings in the category(ies) on dev.bg (any date)\n//   in_period      : those within the selected days_back window (the date-filtered pool)\n//   evaluated      : jobs that passed the keyword pre-filter and got scored\n//   matched        : jobs we actually show (score >= adaptive threshold)\n//   below_threshold: of the EVALUATED jobs, how many fell below the threshold\nconst evaluated = jobs.length;\nconst strong = jobs.filter(j => (j.score || 0) >= 40).length;\n// Adaptive show-threshold: only relax to 30% when the candidate has few strong hits.\nconst threshold = strong >= 4 ? 40 : 30;\nconst matched = jobs.filter(j => (j.score || 0) >= threshold).length;\nconst below_30 = jobs.filter(j => (j.score || 0) < 30).length;\n\n// in_period = date-filtered pool (Assign Job URLs). Fallback to evaluated count.\nlet in_period = evaluated;\nconst periodPool = (((($('Assign Job URLs').first() || {}).json) || {}).output || {}).jobs;\nif (Array.isArray(periodPool)) in_period = periodPool.length;\n\n// total_listings = everything scraped from dev.bg before the date filter.\nlet total_listings = in_period;\nconst allPool = (((($('Parse & Merge Categories').first() || {}).json) || {}).output || {}).jobs;\nif (Array.isArray(allPool)) total_listings = allPool.length;\n\nconst below_threshold = Math.max(0, evaluated - matched);\nconst role = cv.job_type || '';\nconst period_days = ($('Normalize Input').first().json.days_back) || 0;\nconst location = ($('Build dev.bg Target URL').first().json.location) || '';\n\n// One pass over the in-period listings for two things:\n//   from_core_stack : how many share >=1 of the candidate's languages/frameworks\n//   tech_demand     : how many listings request each technology (from the icons) — market view\nconst coreStack = new Set([...(cv.programming_languages || []), ...(cv.frameworks || [])].map(norm).filter(Boolean));\nlet from_core_stack = 0;\nconst demandMap = {}; // norm -> { tech, count }\nconst periodJobs = (((($('Assign Job URLs').first() || {}).json) || {}).output || {}).jobs;\nif (Array.isArray(periodJobs)) {\n  for (const j of periodJobs) {\n    const seen = new Set();\n    let inStack = false;\n    for (const raw of String(j.description || '').replace('Tech stack:', '').split(',')) {\n      const label = String(raw).trim();\n      const n = norm(label);\n      if (!n || seen.has(n)) continue;\n      seen.add(n);\n      if (coreStack.has(n)) inStack = true;\n      if (FOUNDATIONAL.has(n) || HUMAN_LANGS.has(n)) continue;\n      if (!demandMap[n]) demandMap[n] = { tech: label, count: 0 };\n      demandMap[n].count++;\n    }\n    if (inStack) from_core_stack++;\n  }\n}\nconst tech_demand = Object.values(demandMap).sort((a, b) => b.count - a.count).slice(0, 8);\n\n// The candidate's stack, surfaced for transparency (so the user sees what we match against).\nconst stack_core = [...(cv.programming_languages || []), ...(cv.frameworks || [])];\nconst stack_tools = [...(cv.tools || [])];\n\n// Categories actually searched (a role like Fullstack spans several dev.bg sections).\n// Primary (job_type) first, then the rest in scrape order — so the UI can say\n// \"за Fullstack, Backend и Frontend\" honestly.\nlet categories = role ? [role] : [];\ntry {\n  const built = $('Build dev.bg Target URL').all().map(i => i.json.category).filter(Boolean);\n  const distinct = [...new Set(built)];\n  categories = role\n    ? [role, ...distinct.filter(c => c !== role)]\n    : distinct;\n} catch (e) { /* keep [role] */ }\n\nconst stats = {\n  total_listings, in_period, from_core_stack, evaluated, matched,\n  below_threshold, below_30, threshold, role, categories, period_days, location,\n  stack_core, stack_tools, tech_demand,\n  // legacy alias kept so older clients don't break\n  found: in_period\n};\n\nreturn [{ json: { jobs, market_gaps, stats } }];\n"
+        "jsCode": "// Deterministic CV \"market gap\" analysis: aggregates the skills that show up as MISSING\n// across the candidate's relevant (already-scored) jobs, so we can tell them which skills\n// would unlock the most opportunities. No LLM — pure aggregation of data we already have.\nconst jobs = $input.first().json.jobs || [];                    // passthrough from Aggregate\nconst scored = $('Build Scoring Input').first().json.scored || [];\nconst cv = $('Build dev.bg Target URL').first().json.cv_profile || {};\n\nconst ALIASES = {'js':'javascript','ts':'typescript','postgres':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','tailwind css':'tailwindcss','tailwind':'tailwindcss'};\nfunction norm(s){ const t = (s||'').toLowerCase().trim(); return ALIASES[t] || t; }\n\n// skills the candidate already has (exclude from gaps)\nconst cvTech = new Set([...(cv.skills||[]), ...(cv.programming_languages||[]), ...(cv.frameworks||[]), ...(cv.tools||[])].map(norm));\n// ubiquitous / non-tech things that aren't worth recommending\nconst FOUNDATIONAL = new Set(['git','github','gitlab','bitbucket','agile','scrum','kanban','jira','confluence','rest','rest apis','soap'].map(norm));\nconst HUMAN_LANGS = new Set(['english','bulgarian','german','french','spanish','russian','italian','dutch','polish','romanian','greek','turkish','ukrainian'].map(norm));\n\n// Aggregate the skills the candidate is missing across all relevant scored jobs.\nconst agg = {}; // norm -> { label, count, best }\nfor (const s of scored){\n  for (const raw of (s.missing_skills || [])){\n    const label = String(raw).split(' (')[0].trim();\n    const n = norm(label);\n    if (!n || cvTech.has(n) || FOUNDATIONAL.has(n) || HUMAN_LANGS.has(n)) continue;\n    if (!agg[n]) agg[n] = { label, count: 0, best: 0 };\n    agg[n].count++;\n    agg[n].best = Math.max(agg[n].best, s.score || 0);\n  }\n}\nconst all = Object.values(agg)\n  .map(g => ({ skill: g.label, jobs_count: g.count, best_score: g.best }))\n  .sort((a, b) => b.jobs_count - a.jobs_count || b.best_score - a.best_score);\n\n// Recommend skills wanted by 2+ jobs (a real market signal — one job's niche stack is noise).\n// If the pool is too scattered for any skill to repeat, fall back to the strongest few.\nlet market_gaps = all.filter(g => g.jobs_count >= 2);\nif (market_gaps.length === 0) market_gaps = all.slice(0, 3);\nmarket_gaps = market_gaps.slice(0, 5);\n\n// ---- Funnel statistics (transparency for the user) -----------------------\n// The full funnel, widest to narrowest:\n//   total_listings : ALL remote listings in the category(ies) on dev.bg (any date)\n//   in_period      : those within the selected days_back window (the date-filtered pool)\n//   evaluated      : jobs that passed the keyword pre-filter and got scored\n//   matched        : jobs we actually show (score >= adaptive threshold)\n//   below_threshold: of the EVALUATED jobs, how many fell below the threshold\nconst evaluated = jobs.length;\nconst strong = jobs.filter(j => (j.score || 0) >= 40).length;\n// Adaptive show-threshold: only relax to 30% when the candidate has few strong hits.\nconst threshold = strong >= 4 ? 40 : 30;\nconst matched = jobs.filter(j => (j.score || 0) >= threshold).length;\nconst below_30 = jobs.filter(j => (j.score || 0) < 30).length;\n\n// in_period = date-filtered pool (Assign Job URLs). Fallback to evaluated count.\nlet in_period = evaluated;\nconst periodPool = (((($('Assign Job URLs').first() || {}).json) || {}).output || {}).jobs;\nif (Array.isArray(periodPool)) in_period = periodPool.length;\n\n// total_listings = everything scraped from dev.bg before the date filter.\nlet total_listings = in_period;\nconst allPool = (((($('Parse & Merge Categories').first() || {}).json) || {}).output || {}).jobs;\nif (Array.isArray(allPool)) total_listings = allPool.length;\n\nconst below_threshold = Math.max(0, evaluated - matched);\nconst role = cv.job_type || '';\nconst period_days = ($('Normalize Input').first().json.days_back) || 0;\nconst location = ($('Build dev.bg Target URL').first().json.location) || '';\n\n// One pass over the in-period listings for two things:\n//   from_core_stack : how many share >=1 of the candidate's MAIN stack (the defining techs we rank on)\n//   tech_demand     : how many listings request each technology (from the icons) — market view\n// MAIN mirrors the Keyword Pre-Score definition: the LLM-picked primary_stack (minus markup), with a\n// fallback to professionally-used languages + frameworks for older profiles. Markup/styling is excluded\n// so \"in your stack\" honestly means a real language/framework match — not just HTML/CSS.\nconst MARKUP = new Set(['html', 'css', 'scss', 'sass', 'less', 'tailwindcss', 'bootstrap', 'jquery'].map(norm));\nlet mainList = (cv.primary_stack || []).map(norm).filter(Boolean).filter(t => !MARKUP.has(t));\nif (mainList.length === 0) {\n  mainList = [...(cv.primary_languages || []), ...(cv.frameworks || [])].map(norm).filter(Boolean).filter(t => !MARKUP.has(t));\n}\nconst coreStack = new Set(mainList);\nlet from_core_stack = 0;\nconst demandMap = {}; // norm -> { tech, count }\nconst periodJobs = (((($('Assign Job URLs').first() || {}).json) || {}).output || {}).jobs;\nif (Array.isArray(periodJobs)) {\n  for (const j of periodJobs) {\n    const seen = new Set();\n    let inStack = false;\n    for (const raw of String(j.description || '').replace('Tech stack:', '').split(',')) {\n      const label = String(raw).trim();\n      const n = norm(label);\n      if (!n || seen.has(n)) continue;\n      seen.add(n);\n      if (coreStack.has(n)) inStack = true;\n      if (FOUNDATIONAL.has(n) || HUMAN_LANGS.has(n)) continue;\n      if (!demandMap[n]) demandMap[n] = { tech: label, count: 0 };\n      demandMap[n].count++;\n    }\n    if (inStack) from_core_stack++;\n  }\n}\nconst tech_demand = Object.values(demandMap).sort((a, b) => b.count - a.count).slice(0, 8);\n\n// Structured market view: group the demanded techs by type so the UI can show MORE of the core\n// ones (languages/frameworks) while keeping tools compact. Markup (html/css/…) is omitted here —\n// near-universal, low signal, and already de-emphasised elsewhere.\nconst DEMAND_LANGS = new Set(['java','kotlin','javascript','typescript','python','c#','c++','c','go','ruby','php','scala','rust','swift','objective-c','sql','r','dart','perl','groovy','elixir','clojure','bash','powershell','plsql','pl/sql','vb.net','assembly','haskell','lua','matlab','solidity','f#','abap','cobol','shell'].map(norm));\nconst DEMAND_FRAMEWORKS = new Set(['react','angular','angularjs','vue.js','node.js','next.js','nuxt.js','nuxt','svelte','sveltekit','express','express.js','nestjs','nest.js','spring','spring boot','spring mvc','spring webflux','.net','asp.net','.net core','django','flask','fastapi','laravel','symfony','ruby on rails','rails','rxjs','jquery','tailwindcss','bootstrap','react native','flutter','hibernate','jpa','spring data','entity framework','quarkus','micronaut','gin','fiber','phoenix','ktor','blazor','electron','redux','material ui','materialui','remix','astro','apollo client'].map(norm));\nconst DEMAND_DATABASES = new Set(['postgresql','mysql','mongodb','redis','oracle','sql server','ms sql','mssql','mariadb','dynamodb','amazon dynamodb','elasticsearch','cassandra','sqlite','neo4j','couchbase','cosmos db','firestore','influxdb','snowflake','bigquery','nosql'].map(norm));\nconst DEMAND_CLOUD = new Set(['aws','azure','gcp','google cloud','google cloud platform','docker','kubernetes','terraform','jenkins','ansible','github actions','gitlab ci','helm','prometheus','grafana','serverless','openshift','circleci','azure devops','cloudformation','pulumi','nginx','linux','unix','linux/unix','ci/cd','datadog','argocd','istio','aws lambda','lambda'].map(norm));\nconst DEMAND_MARKUP = new Set(['html','css','scss','sass','less'].map(norm));\n\nfunction demandGroupOf(n) {\n  if (DEMAND_MARKUP.has(n)) return null;      // skip markup entirely\n  if (DEMAND_LANGS.has(n)) return 'languages';\n  if (DEMAND_FRAMEWORKS.has(n)) return 'frameworks';\n  if (DEMAND_DATABASES.has(n)) return 'databases';\n  if (DEMAND_CLOUD.has(n)) return 'cloud';\n  return 'tools';                             // catch-all\n}\nconst GROUP_META = [\n  { key: 'languages',  label: 'Езици',          limit: 5 },\n  { key: 'frameworks', label: 'Фреймуорци',     limit: 5 },\n  { key: 'databases',  label: 'Бази данни',     limit: 3 },\n  { key: 'cloud',      label: 'Cloud & DevOps', limit: 3 },\n  { key: 'tools',      label: 'Инструменти',    limit: 3 }\n];\nconst groupBuckets = {};\nfor (const [n, v] of Object.entries(demandMap)) {\n  const g = demandGroupOf(n);\n  if (!g) continue;\n  (groupBuckets[g] = groupBuckets[g] || []).push({ tech: v.tech, count: v.count });\n}\nconst tech_demand_groups = GROUP_META\n  .filter(m => groupBuckets[m.key] && groupBuckets[m.key].length)\n  .map(m => ({\n    key: m.key,\n    label: m.label,\n    items: groupBuckets[m.key].sort((a, b) => b.count - a.count).slice(0, m.limit)\n  }));\n\n// The candidate's stack, surfaced for transparency (so the user sees what we match against).\nconst stack_core = [...(cv.programming_languages || []), ...(cv.frameworks || [])];\nconst stack_tools = [...(cv.tools || [])];\n\n// Categories actually searched (a role like Fullstack spans several dev.bg sections).\n// Primary (job_type) first, then the rest in scrape order — so the UI can say\n// \"за Fullstack, Backend и Frontend\" honestly.\nlet categories = role ? [role] : [];\ntry {\n  const built = $('Build dev.bg Target URL').all().map(i => i.json.category).filter(Boolean);\n  const distinct = [...new Set(built)];\n  categories = role\n    ? [role, ...distinct.filter(c => c !== role)]\n    : distinct;\n} catch (e) { /* keep [role] */ }\n\n// The candidate's MAIN stack (what we actually rank/match on), surfaced for transparency.\nconst primary_stack = [...(cv.primary_stack || [])];\n\nconst stats = {\n  total_listings, in_period, from_core_stack, evaluated, matched,\n  below_threshold, below_30, threshold, role, categories, period_days, location,\n  stack_core, stack_tools, primary_stack, tech_demand, tech_demand_groups,\n  // legacy alias kept so older clients don't break\n  found: in_period\n};\n\nreturn [{ json: { jobs, market_gaps, stats } }];\n"
       },
       "id": "08964569-6325-446a-9c8b-306d0e3b9474",
       "name": "Analyze CV Gaps",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4176,
-        96
+        2688,
+        464
       ]
     },
     {
@@ -787,8 +767,8 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        4336,
-        96
+        2864,
+        464
       ]
     },
     {
@@ -801,8 +781,8 @@
       "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
       "typeVersion": 1,
       "position": [
-        4336,
-        288
+        2864,
+        656
       ],
       "id": "b3c7bab4-574a-436c-8c28-32dcefae1c8d",
       "name": "DeepSeek Chat Model"
@@ -817,8 +797,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        3520,
-        304
+        1856,
+        656
       ],
       "id": "3595a4c3-c899-4732-aafd-e77f60ecbaa4",
       "name": "Google Gemini Chat Model2"
@@ -833,185 +813,167 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        4496,
-        288
+        3024,
+        656
       ],
       "id": "04714e7b-29c9-40c7-95fe-e36eb9571909",
       "name": "Google Gemini Chat Model3"
     },
     {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "91DNRjtivHO88DDe"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "request_id",
+              "keyValue": "={{ $('Receive CV Upload').first().json.body.request_id }}"
+            }
+          ]
+        }
+      },
       "id": "1b0e18e7-3869-4dcc-8700-d9d2de439f53",
       "name": "Stop Checkpoint 1",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        912,
-        300
-      ],
+        640,
+        112
+      ]
+    },
+    {
       "parameters": {
-        "resource": "row",
         "operation": "rowNotExists",
         "dataTableId": {
           "__rl": true,
           "mode": "id",
           "value": "91DNRjtivHO88DDe"
         },
-        "matchType": "anyCondition",
         "filters": {
           "conditions": [
             {
               "keyName": "request_id",
-              "condition": "eq",
               "keyValue": "={{ $('Receive CV Upload').first().json.body.request_id }}"
             }
           ]
         }
-      }
-    },
-    {
+      },
       "id": "273c07e0-a4c4-44db-9691-3dfef3c470d5",
       "name": "Stop Checkpoint 2",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        1920,
-        240
-      ],
+        2064,
+        96
+      ]
+    },
+    {
       "parameters": {
-        "resource": "row",
         "operation": "rowNotExists",
         "dataTableId": {
           "__rl": true,
           "mode": "id",
           "value": "91DNRjtivHO88DDe"
         },
-        "matchType": "anyCondition",
         "filters": {
           "conditions": [
             {
               "keyName": "request_id",
-              "condition": "eq",
               "keyValue": "={{ $('Receive CV Upload').first().json.body.request_id }}"
             }
           ]
         }
-      }
-    },
-    {
+      },
       "id": "c897ad4f-548e-4abf-aca4-d3adcfc2ee9e",
       "name": "Stop Checkpoint 3",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        2848,
-        240
-      ],
+        3088,
+        96
+      ]
+    },
+    {
       "parameters": {
-        "resource": "row",
         "operation": "rowNotExists",
         "dataTableId": {
           "__rl": true,
           "mode": "id",
           "value": "91DNRjtivHO88DDe"
         },
-        "matchType": "anyCondition",
         "filters": {
           "conditions": [
             {
               "keyName": "request_id",
-              "condition": "eq",
               "keyValue": "={{ $('Receive CV Upload').first().json.body.request_id }}"
             }
           ]
         }
-      }
-    },
-    {
+      },
       "id": "c2a7507e-3a3e-4e63-a9da-1b184825c615",
       "name": "Stop Checkpoint 4",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        3280,
-        240
-      ],
+        3696,
+        96
+      ]
+    },
+    {
       "parameters": {
-        "resource": "row",
         "operation": "rowNotExists",
         "dataTableId": {
           "__rl": true,
           "mode": "id",
           "value": "91DNRjtivHO88DDe"
         },
-        "matchType": "anyCondition",
         "filters": {
           "conditions": [
             {
               "keyName": "request_id",
-              "condition": "eq",
               "keyValue": "={{ $('Receive CV Upload').first().json.body.request_id }}"
             }
           ]
         }
-      }
-    },
-    {
+      },
       "id": "4c82b7c0-6be8-471e-b6e5-5d9a62484095",
       "name": "Stop Checkpoint 5",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        4088,
-        240
-      ],
+        2512,
+        464
+      ]
+    },
+    {
       "parameters": {
-        "resource": "row",
         "operation": "rowNotExists",
         "dataTableId": {
           "__rl": true,
           "mode": "id",
           "value": "91DNRjtivHO88DDe"
         },
-        "matchType": "anyCondition",
         "filters": {
           "conditions": [
             {
               "keyName": "request_id",
-              "condition": "eq",
               "keyValue": "={{ $('Receive CV Upload').first().json.body.request_id }}"
             }
           ]
         }
-      }
-    },
-    {
+      },
       "id": "8fb7dfc2-a983-49e1-9b6a-34d41e9ee96c",
       "name": "Stop Checkpoint 6",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        4820,
-        240
-      ],
-      "parameters": {
-        "resource": "row",
-        "operation": "rowNotExists",
-        "dataTableId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "91DNRjtivHO88DDe"
-        },
-        "matchType": "anyCondition",
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "request_id",
-              "condition": "eq",
-              "keyValue": "={{ $('Receive CV Upload').first().json.body.request_id }}"
-            }
-          ]
-        }
-      }
+        3328,
+        464
+      ]
     }
   ],
   "connections": {
@@ -1063,22 +1025,11 @@
       "main": [
         [
           {
-            "node": "Send Results Email",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
             "node": "Return Results",
             "type": "main",
             "index": 0
           }
-        ]
-      ]
-    },
-    "Send Results Email": {
-      "main": [
+        ],
         [
           {
             "node": "Return Results",

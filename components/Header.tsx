@@ -9,12 +9,13 @@ interface Props {
 
 export default function Header({ onReset }: Props) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
+    // Sync the toggle icon to the persisted theme after mount. Server + first client render both
+    // default to 'light', so the button always renders (no blink) — only the icon flips post-mount.
     const stored = (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(stored);
   }, []);
 
@@ -37,38 +38,39 @@ export default function Header({ onReset }: Props) {
           </span>
         </span>
 
-        <div className="ms-auto d-flex align-items-center gap-2">
+        <div className="ms-auto d-flex align-items-center gap-2 nav-actions">
           <button
-            className="btn btn-sm btn-outline-primary"
+            className="nav-btn nav-btn-primary"
             onClick={() => onReset ? onReset() : router.push('/')}
             title="Начало"
           >
-            <i className="bi bi-house-fill" />
-            <span className="d-none d-sm-inline ms-1">Начало</span>
+            <i className="bi bi-house-door" />
+            <span className="d-none d-sm-inline">Начало</span>
           </button>
 
           <a
             href="https://dev.bg"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-sm btn-outline-secondary"
+            className="nav-btn nav-btn-ghost"
             title="Към dev.bg"
           >
-            <i className="bi bi-code-slash d-sm-none" />
-            <span className="d-none d-sm-inline">
-              Към dev.bg
-              <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }} />
-            </span>
+            <span className="d-none d-sm-inline">dev.bg</span>
+            <i className="bi bi-box-arrow-up-right" />
           </a>
-          {mounted && (
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={toggleTheme}
-              title={theme === 'light' ? 'Тъмна тема' : 'Светла тема'}
-            >
-              <i className={`bi ${theme === 'light' ? 'bi-moon-fill' : 'bi-sun-fill'}`} />
-            </button>
-          )}
+
+          <button
+            className="nav-btn nav-btn-icon"
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'Тъмна тема' : 'Светла тема'}
+            aria-label="Смени темата"
+            suppressHydrationWarning
+          >
+            <i
+              className={`bi ${theme === 'light' ? 'bi-moon-stars' : 'bi-sun'}`}
+              suppressHydrationWarning
+            />
+          </button>
         </div>
       </div>
     </nav>

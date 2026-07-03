@@ -32,7 +32,6 @@ for (const r of LINEAGE) { const al = r.a.toLowerCase(); if (r.w() && !cvAllTech
 
 const candidateSkills = [...cvAllTech, ...impliedSkills, ...lineageSkills];
 
-// Cloud umbrellas: credit AWS/Azure/GCP when any service or prefixed form is present.
 const AWS_SERVICES = ['ec2','rds','s3','lambda','ecs','eks','dynamodb','cloudwatch','codedeploy','cloudformation','sqs','sns','cloudfront','elasticache','redshift','kinesis','fargate','opensearch'];
 const CLOUD = [
   { term: 'AWS',   prov: 'aws',   svc: AWS_SERVICES },
@@ -50,7 +49,7 @@ for (const c of CLOUD) {
 
 const spokenLangs = cv.spoken_languages || [];
 
-const ALIASES = {'js':'javascript','ecmascript':'javascript','ts':'typescript','postgres':'postgresql','postgre':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','.net 8':'.net','.net framework':'.net','rest':'rest apis','rest api':'rest apis','restful apis':'rest apis','restful api':'rest apis'};
+const ALIASES = {'js':'javascript','ecmascript':'javascript','ts':'typescript','postgres':'postgresql','postgre':'postgresql','node':'node.js','nodejs':'node.js','k8s':'kubernetes','csharp':'c#','golang':'go','reactjs':'react','react.js':'react','nextjs':'next.js','vuejs':'vue.js','vue':'vue.js','css3':'css','html5':'html','dotnet':'.net','.net core':'.net','.net 8':'.net','.net framework':'.net','rest':'rest apis','rest api':'rest apis','restful apis':'rest apis','restful api':'rest apis','tailwind css':'tailwindcss','tailwind':'tailwindcss'};
 function norm(s){ const t = (s||'').toLowerCase().trim(); return ALIASES[t] || t; }
 const candidateNorm = candidateSkills.map(norm);
 const candidateSet = new Set(candidateNorm);
@@ -75,8 +74,6 @@ function dedupSkills(arr){
 const FOUNDATIONAL = new Set(['git','github','gitlab','bitbucket','agile','scrum','kanban','jira','confluence'].map(norm));
 const HUMAN_LANGS = new Set(['english','bulgarian','german','french','spanish','russian','italian','dutch','portuguese','polish','romanian','greek','turkish','ukrainian','czech','hungarian','croatian','serbian','arabic','chinese','japanese'].map(norm));
 const LANGUAGES = new Set(['java','kotlin','go','python','c#','javascript','typescript','php','ruby','c++','c','rust','scala','swift','objective-c','perl','dart','elixir','clojure','groovy','f#','vb.net','lua','haskell','julia'].map(norm));
-// For a frontend/fullstack candidate the UI framework is the decisive skill (everyone has
-// JavaScript) — give frontend frameworks a moderate ×2 weight (languages are ×3, base ×1).
 const FRONTEND_FRAMEWORKS = new Set(['react','angular','angularjs','vue.js','svelte','next.js','nuxt'].map(norm));
 const isFrontendCandidate = ['frontend','fullstack','full-stack'].includes(jobType);
 const techWeight = (t) => {
@@ -132,13 +129,7 @@ const COMPARABLE_PAIRS = [
   ['Jest','Mocha','Jasmine','Vitest'],
   ['Cypress','Playwright','Selenium','WebdriverIO']
 ];
-// SQL dialects + AngularJS (the old Angular) are credited even without the listing inviting
-// alternatives (same family / framework lineage). NOT 'Angular' itself — that would open
-// Angular<->React transferability, which we deliberately keep gated. Other groups need the gate.
 const ALWAYS_COMPARABLE = new Set(['PostgreSQL','MySQL','MariaDB','Oracle','SQL Server','SQL','AngularJS'].map(norm));
-// Same tech, different generation (e.g. AngularJS = old Angular). Treated as a partial
-// "имаш познания" match (yellow) rather than a regular alternative, and the newer version's
-// icon does not double as a full match for the older requirement.
 const VERSION_LINEAGE = [['angular','angularjs']];
 function isLineage(a, b){ return VERSION_LINEAGE.some(p => p.includes(a) && p.includes(b) && a !== b); }
 function findComparable(reqTech, allowedNorm){
@@ -168,7 +159,14 @@ function levelRank(s){
   if (t.includes('junior')||t.includes('jr.')||t.includes('jr ')||t.includes('entry')||t.includes('graduate')||t.includes('trainee')||t.includes('intern')) return 1;
   return 0;
 }
-const candRank = levelRank(cv.experience_level);
+// Candidate seniority = level implied by TOTAL years (bands: <2 Junior, 2-5 Mid, 5-10 Senior, 10+ Lead),
+// falling back to the extractor's word if years are missing. Held titles may lift the level by AT MOST
+// one step above what the years imply (and never lower it) — credits real seniority without letting an
+// inflated title (e.g. "Senior" at 2 yrs) over-promote. If no title carries a seniority word, years win.
+function bandRank(y){ if (y >= 10) return 4; if (y >= 5) return 3; if (y >= 2) return 2; return 1; }
+const yearsRank = (cv.years_of_experience > 0) ? bandRank(cv.years_of_experience) : levelRank(cv.experience_level);
+const titleRank = Math.max(0, ...(cv.job_titles || []).map(levelRank));
+const candRank = titleRank > 0 ? Math.max(yearsRank, Math.min(titleRank, yearsRank + 1)) : yearsRank;
 const SHOW_THRESHOLD = 30;
 
 const scored = requirements.map((req, i) => {
@@ -203,8 +201,6 @@ const scored = requirements.map((req, i) => {
   for (const tag of jobTags) {
     const tn = norm(tag);
     if (!tn || knownNorm.has(tn) || HUMAN_LANGS.has(tn)) continue;
-    // skip an icon that's just a newer/older version of an already-required tech
-    // (e.g. don't let an "Angular" icon fully satisfy an "AngularJS" requirement)
     if ([...knownNorm].some(k => isLineage(tn, k))) continue;
     knownNorm.add(tn); reqTech.push(tag);
   }
@@ -269,8 +265,6 @@ const scored = requirements.map((req, i) => {
 
   const raw = (aScore + bScore + expScore + mlScore) * 100;
   const coreFactor = coreTotW === 0 ? 1 : Math.min(1, 0.3 + 1.4 * coreCoverage);
-  // Experience below the role's requirement is an important negative signal — apply an extra
-  // flat 5-point penalty on top of the graded expScore above.
   let score = Math.round(raw * coreFactor * mainFactor);
   if (!expMatch) score = Math.max(0, score - 5);
 

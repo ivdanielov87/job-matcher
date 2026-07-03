@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Header from '@/components/Header';
 import CVUploadForm from '@/components/CVUploadForm';
 import LoadingState from '@/components/LoadingState';
@@ -9,13 +9,37 @@ import type { AnalyzeResponse, FormData } from '@/types';
 
 type AppState = 'form' | 'loading' | 'results';
 
+// Last results are cached per-tab so a refresh restores the view instead of wiping a paid analysis.
+const STORAGE_KEY = 'cvjm:last-results';
+
 export default function Home() {
   const [state, setState] = useState<AppState>('form');
   const [results, setResults] = useState<AnalyzeResponse | null>(null);
   const [daysBack, setDaysBack] = useState<number>(7);
   const [apiError, setApiError] = useState('');
+  const [hydrated, setHydrated] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef<string>('');
+
+  // Restore the last results on mount, THEN reveal the UI. Until then we show a neutral splash, so
+  // the SSR-rendered form is never flashed before we swap to the restored results. Client-only.
+  useEffect(() => {
+    // One-time mount sync; the set-state-in-effect rule guards render-loop cascades, not this.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      const saved = raw ? (JSON.parse(raw) as { results?: AnalyzeResponse; daysBack?: number }) : null;
+      if (saved?.results) {
+        setResults(saved.results);
+        setDaysBack(saved.daysBack ?? 7);
+        setState('results');
+      }
+    } catch {
+      /* ignore malformed / unavailable storage */
+    }
+    setHydrated(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   const handleSubmit = async (file: File, form: FormData) => {
     setState('loading');
@@ -50,6 +74,11 @@ export default function Home() {
 
       setResults(data);
       setState('results');
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ results: data, daysBack: form.days_back }));
+      } catch {
+        /* storage full / unavailable — non-fatal */
+      }
     } catch (err) {
       // Прекратено от потребителя — състоянието вече е върнато в handleCancel.
       if (err instanceof DOMException && err.name === 'AbortError') return;
@@ -85,6 +114,11 @@ export default function Home() {
     setResults(null);
     setApiError('');
     setState('form');
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
   };
 
   return (
@@ -92,7 +126,13 @@ export default function Home() {
       <Header onReset={handleReset} />
 
       <main className="container py-4 flex-grow-1">
-        {state === 'form' && (
+        {!hydrated && (
+          <div className="page-splash">
+            <div className="spinner-border text-primary" role="status" />
+          </div>
+        )}
+
+        {hydrated && state === 'form' && (
           <>
             <div className="hero-section">
               <h1>
@@ -145,11 +185,13 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="site-footer border-top">
-        <div className="container">
-          CV Job Matcher — AI-powered job matching за разработчици
-        </div>
-      </footer>
+      {hydrated && (
+        <footer className="site-footer border-top">
+          <div className="container">
+            CV Job Matcher — AI-powered job matching за разработчици
+          </div>
+        </footer>
+      )}
     </>
   );
 }

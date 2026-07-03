@@ -56,7 +56,7 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
           <div className="results-header">
             <div className="results-header-main">
               <div className={`results-badge${hasResults ? '' : ' results-badge--empty'}`}>
-                <i className={`bi ${hasResults ? 'bi-bullseye' : 'bi-search'}`} />
+                <i className={`bi ${hasResults ? 'bi-trophy-fill' : 'bi-search'}`} />
               </div>
               <div>
                 <div className="results-eyebrow">Резултати от търсенето</div>

@@ -21,6 +21,20 @@ function formatDate(dateStr: string): string {
   }
 }
 
+// Обяви от последните 3 календарни дни се маркират като нови.
+const NEW_JOB_DAYS = 3;
+
+function isRecent(dateStr: string): boolean {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  const startOfToday = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const postedDay = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  const daysAgo = Math.round((startOfToday - postedDay) / 86_400_000);
+  return daysAgo >= 0 && daysAgo <= NEW_JOB_DAYS;
+}
+
 export default function JobCard({ job }: { job: Job }) {
   const cls = scoreClass(job.score);
   const sourceClass = job.source ? `source-${job.source.replace('.', '-')}` : '';
@@ -140,9 +154,17 @@ export default function JobCard({ job }: { job: Job }) {
 
         {/* Footer */}
         <div className="job-footer">
-          <span className="job-date">
-            <i className="bi bi-calendar3 me-1" />
-            {formatDate(job.date_posted)}
+          <span className="job-date-wrap">
+            <span className="job-date">
+              <i className="bi bi-calendar3 me-1" />
+              {formatDate(job.date_posted)}
+            </span>
+            {isRecent(job.date_posted) && (
+              <span className="job-new-badge">
+                <i className="bi bi-stars" />
+                Нова обява
+              </span>
+            )}
           </span>
           <a
             href={job.url}

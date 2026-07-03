@@ -31,7 +31,22 @@ const locationMap = {
   'Стара Загора': 'stara-zagora'
 };
 
-const jobType = cvProfile?.job_type || 'Backend';
+// The extractor's job_type SHOULD be one of our canonical categories, but the LLM sometimes
+// free-forms it (e.g. "Full-Stack Web Developer" instead of "Fullstack"). Normalize to a known
+// category so we never build an "undefined" scrape URL (which silently returns zero jobs).
+function normalizeJobType(raw){
+  const t = String(raw || '').toLowerCase();
+  if (/full[\s-]?stack/.test(t)) return 'Fullstack';
+  if (/front[\s-]?end/.test(t)) return 'Frontend';
+  if (/back[\s-]?end/.test(t)) return 'Backend';
+  if (/\bqa\b|quality|tester|testing/.test(t)) return 'QA';
+  if (/mobile|android|\bios\b|flutter|react native/.test(t)) return 'Mobile';
+  if (/devops|\bsre\b|infrastructure|platform eng/.test(t)) return 'DevOps';
+  if (/data (scien|eng|analy)|analytic|machine learning|\bml\b/.test(t)) return 'Data';
+  const known = ['Backend','Frontend','Fullstack','QA','Mobile','DevOps','Data'];
+  return known.find(k => k.toLowerCase() === t) || 'Backend';
+}
+const jobType = normalizeJobType(cvProfile?.job_type);
 const categories = categoryMap[jobType] || [jobType];
 const locationSlug = locationMap[prefs.location];
 
@@ -39,6 +54,7 @@ const cvProfileData = {
   skills:                cvProfile?.skills || [],
   programming_languages: cvProfile?.programming_languages || [],
   primary_languages:     cvProfile?.primary_languages || [],
+  primary_stack:         cvProfile?.primary_stack || [],
   frameworks:            cvProfile?.frameworks || [],
   tools:                 cvProfile?.tools || [],
   spoken_languages:      cvProfile?.spoken_languages || [],

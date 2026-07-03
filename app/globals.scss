@@ -61,6 +61,77 @@ html, body {
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 }
 
+// ── Navbar action buttons ──────────────────────────────────────────────────────
+// One cohesive family: a soft pill for the primary action, a quiet ghost for the
+// external link, and a square icon toggle — all sharing rounding, sizing and easing
+// so the top bar reads as a designed set, not three mismatched Bootstrap buttons.
+.nav-actions {
+  .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2.15rem;
+    padding: 0 0.85rem;
+    border-radius: 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease,
+      box-shadow 0.18s ease, transform 0.12s ease;
+
+    i { font-size: 0.95rem; }
+    &:active { transform: translateY(0.5px); }
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.28);
+    }
+  }
+
+  // Primary — softly branded fill (matches the "Ново търсене" / submit language).
+  .nav-btn-primary {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: rgba(var(--bs-primary-rgb), 0.22);
+    &:hover {
+      background: rgba(var(--bs-primary-rgb), 0.17);
+      border-color: rgba(var(--bs-primary-rgb), 0.4);
+    }
+  }
+
+  // Ghost — quiet neutral outline for the secondary external link.
+  .nav-btn-ghost {
+    color: var(--bs-secondary-color);
+    background: transparent;
+    border-color: var(--bs-border-color);
+    text-decoration: none;
+    i { font-size: 0.78rem; opacity: 0.85; }
+    &:hover {
+      color: var(--bs-body-color);
+      background: rgba(var(--bs-secondary-rgb), 0.07);
+      border-color: var(--bs-secondary-color);
+    }
+  }
+
+  // Icon-only square toggle (theme) — same footprint, no label.
+  .nav-btn-icon {
+    width: 2.15rem;
+    padding: 0;
+    justify-content: center;
+    color: var(--bs-secondary-color);
+    background: transparent;
+    border-color: var(--bs-border-color);
+    i { font-size: 1rem; }
+    &:hover {
+      color: var(--bs-primary);
+      background: rgba(var(--bs-primary-rgb), 0.08);
+      border-color: rgba(var(--bs-primary-rgb), 0.3);
+    }
+  }
+}
+
 .navbar-brand-logo {
   display: inline-flex;
   align-items: center;
@@ -240,25 +311,24 @@ html, body {
   letter-spacing: -0.005em;
   margin-bottom: 0.5rem;
 
-  // Each field icon becomes a small colourful gradient chip. Colours are drawn
-  // from the site palette so they stay cohesive while feeling lively.
+  // Each field icon sits in a soft tinted chip with a subtly coloured glyph —
+  // a hint of colour for quick scanning, without shouting for attention.
   i {
     flex-shrink: 0;
     display: inline-grid;
     place-items: center;
-    width: 1.55rem;
-    height: 1.55rem;
-    border-radius: 0.45rem;
-    font-size: 0.78rem;
-    color: #fff;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 0.42rem;
+    font-size: 0.72rem;
     opacity: 1;
-    background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
-    box-shadow: 0 2px 7px rgba(var(--bs-primary-rgb), 0.25);
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
   }
 
-  i.bi-geo-alt-fill { background: linear-gradient(135deg, #4361ee 0%, #4895ef 100%); }
-  i.bi-envelope     { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); box-shadow: 0 2px 7px rgba(124, 58, 237, 0.28); }
-  i.bi-calendar3    { background: linear-gradient(135deg, #06b6d4 0%, #2dc653 100%); box-shadow: 0 2px 7px rgba(45, 198, 83, 0.28); }
+  i.bi-geo-alt-fill { color: #4361ee; background: rgba(67, 97, 238, 0.1); }
+  i.bi-envelope     { color: #7c3aed; background: rgba(124, 58, 237, 0.1); }
+  i.bi-calendar3    { color: #159a4a; background: rgba(45, 198, 83, 0.12); }
 
   .pref-optional {
     font-weight: 400;
@@ -298,6 +368,23 @@ html, body {
 
 .btn-check:focus-visible + .week-btn {
   box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.3);
+}
+
+// Brighter glyphs on dark so the tinted chips stay legible.
+[data-bs-theme="dark"] .pref-label {
+  i.bi-geo-alt-fill { color: #6b8afd; }
+  i.bi-envelope     { color: #b98cf7; }
+  i.bi-calendar3    { color: #4fd07a; }
+}
+
+// Slightly smaller type on phones so the preferences stay compact.
+@media (max-width: 575px) {
+  .prefs-section { padding: 1.1rem 1rem 1rem; }
+  .prefs-section-header { font-size: 0.68rem; margin-bottom: 1rem; }
+  .pref-label { font-size: 0.78rem; }
+  .prefs-section .form-select,
+  .prefs-section .form-control { font-size: 0.8rem; }
+  .week-btn { font-size: 0.78rem; min-width: 4.25rem; }
 }
 
 // ── Upload card ───────────────────────────────────────────────────────────────
@@ -398,6 +485,16 @@ html, body {
     font-weight: 600;
     color: var(--bs-success);
   }
+}
+
+// ── Restore splash ────────────────────────────────────────────────────────────
+// Brief neutral loader shown on mount while we decide (form vs. restored results),
+// so the SSR form is never flashed before swapping to persisted results.
+.page-splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 55vh;
 }
 
 // ── Loading ───────────────────────────────────────────────────────────────────
@@ -651,7 +748,7 @@ html, body {
 
 // On mobile the CV tips collapse into an accordion (closed by default) so they
 // don't push the job cards out of view.
-@media (max-width: 767px) {
+@media (max-width: 991px) {
   .cv-review .cv-review-toggle { cursor: pointer; }
   .cv-review .cv-review-chevron { display: inline-block; }
   .cv-review .cv-review-body { display: none; margin-top: 0; }
@@ -683,15 +780,16 @@ html, body {
 
 .results-badge {
   flex-shrink: 0;
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 0.75rem;
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 0.8rem;
   display: grid;
   place-items: center;
-  font-size: 1.15rem;
+  font-size: 1.3rem;
   color: #fff;
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
-  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.28);
+  // Warm gold gradient — the trophy should read as an achievement/reward, not just another brand chip.
+  background: linear-gradient(135deg, #f5b301 0%, #e8890c 100%);
+  box-shadow: 0 4px 14px rgba(232, 137, 12, 0.35);
 
   &--empty {
     color: var(--bs-secondary-color);
@@ -750,12 +848,39 @@ html, body {
   padding-top: 1.4rem;
   border-top: 1px solid var(--bs-border-color);
 
-  .search-stats-text {
-    font-size: 0.9rem;
-    line-height: 1.65;
-    color: var(--bs-secondary-color);
+  .search-stats-points {
+    list-style: none;
     margin: 0 0 1.05rem;
-    strong { color: var(--bs-body-color); font-weight: 600; }
+    padding: 0;
+
+    li {
+      position: relative;
+      padding-left: 1.4rem;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--bs-secondary-color);
+
+      & + li { margin-top: 0.5rem; }
+
+      // Custom bullet — a small brand dot.
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0.2rem;
+        top: 0.62em;
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: 50%;
+        background: var(--bs-primary);
+        opacity: 0.55;
+      }
+
+      strong { color: var(--bs-body-color); font-weight: 600; }
+    }
+
+    @media (max-width: 575px) {
+      li { font-size: 0.83rem; }
+    }
   }
 
   .search-stats-grid {
@@ -842,18 +967,43 @@ html, body {
       opacity: 0.55;
       margin-bottom: 0.55rem;
     }
+    // Compact 2-column layout: aligned labels on the left, pills flowing on the right.
+    .tech-demand-groups {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 0.6rem;
+      row-gap: 0.4rem;
+      align-items: start;
+    }
+    // Each group's label + list become cells of the shared grid so labels line up in one column.
+    .tech-demand-group { display: contents; }
+    .tech-demand-group-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.3rem;
+      padding-top: 0.22rem;
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.55;
+      white-space: nowrap;
+
+      i { color: var(--bs-primary); opacity: 0.8; font-size: 0.9em; }
+    }
     .tech-demand-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
+      gap: 0.3rem;
     }
     .tech-demand-item {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.78rem;
+      gap: 0.28rem;
+      font-size: 0.72rem;
       font-weight: 500;
-      padding: 0.22rem 0.3rem 0.22rem 0.6rem;
+      padding: 0.16rem 0.26rem 0.16rem 0.52rem;
       border-radius: 999px;
       background: rgba(var(--bs-secondary-rgb), 0.08);
       border: 1px solid var(--bs-border-color);
@@ -861,14 +1011,94 @@ html, body {
     .tech-demand-count {
       display: inline-grid;
       place-items: center;
-      min-width: 1.35rem;
-      height: 1.35rem;
+      min-width: 1.05rem;
+      height: 1.05rem;
       border-radius: 50%;
       background: rgba(var(--bs-primary-rgb), 0.12);
       color: var(--bs-primary);
-      font-size: 0.72rem;
+      font-size: 0.64rem;
       font-weight: 700;
     }
+
+    // On very narrow screens stack label above its pills (grid columns get cramped).
+    @media (max-width: 420px) {
+      .tech-demand-groups { grid-template-columns: 1fr; row-gap: 0.7rem; }
+      .tech-demand-group-label { justify-content: flex-start; padding-top: 0; margin-bottom: 0.35rem; }
+    }
+    margin-top: 0;
+  }
+
+  // Key-number tiles sit at the top now; give them air before the detail block.
+  .search-stats-grid { margin-bottom: 1.25rem; }
+
+  // ── Collapsible detailed analysis ──────────────────────────────────────────
+  // The toggle button is inert on desktop (details always shown); on mobile it
+  // becomes a real accordion so the long funnel text doesn't force endless scroll.
+  .search-stats-toggle {
+    display: none; // desktop: no toggle, body is always open
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.6rem 0.15rem;
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+
+    .search-stats-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--bs-primary);
+    }
+    .search-stats-chevron { opacity: 0.5; transition: transform 0.2s ease; }
+  }
+
+  // Stack + market demand side by side on wide screens so the user can compare
+  // "what I have" vs "what's in demand" at a glance; stacks on narrow screens.
+  .stack-vs-demand {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+
+    @media (max-width: 991px) {
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+
+    .stack-legend { margin: 0; height: 100%; }
+    .tech-demand { margin-top: 0; }
+  }
+
+  // "+N още" / "Скрий" toggle inside the stack legend.
+  .stack-legend-more {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-primary);
+    cursor: pointer;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+// Mobile: turn the detailed analysis into an accordion (closed by default).
+@media (max-width: 991px) {
+  .search-stats-detail {
+    .search-stats-toggle {
+      display: flex;
+      border-top: 1px solid var(--bs-border-color);
+      margin-top: 0.25rem;
+    }
+    .search-stats-detail-body { display: none; }
+    &.is-open .search-stats-detail-body { display: block; padding-top: 0.5rem; }
+    &.is-open .search-stats-chevron { transform: rotate(180deg); }
   }
 }
 
@@ -922,6 +1152,15 @@ html, body {
     border-color: rgba(var(--bs-primary-rgb), 0.4);
   }
   .bi-chevron-down { font-size: 0.72rem; opacity: 0.7; }
+
+  // Full width on mobile + tablet so it's an easy, obvious tap target.
+  @media (max-width: 991px) {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    border-radius: 0.7rem;
+    padding: 0.7rem 1rem;
+  }
 }
 
 // Floating scroll-to-top button (mobile + desktop).
@@ -1252,10 +1491,41 @@ html, body {
   border-top: 1px solid var(--bs-border-color);
   gap: 0.5rem;
 
+  .job-date-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
   .job-date {
     font-size: 0.78rem;
     opacity: 0.45;
   }
+
+  // "Нова обява" — a fresh, green pill (posting ≤ 3 days old) so recent ads pop.
+  .job-new-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    padding: 0.16rem 0.55rem;
+    border-radius: 999px;
+    color: #147a3a;
+    background: rgba(45, 198, 83, 0.15);
+    border: 1px solid rgba(45, 198, 83, 0.4);
+
+    i { font-size: 0.85em; }
+  }
+}
+
+[data-bs-theme="dark"] .job-footer .job-new-badge {
+  color: #7ce89a;
+  background: rgba(45, 198, 83, 0.18);
+  border-color: rgba(45, 198, 83, 0.35);
 }
 
 // ── Empty / error states ──────────────────────────────────────────────────────
