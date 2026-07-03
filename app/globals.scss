@@ -24,6 +24,13 @@
 }
 
 [data-bs-theme="dark"] {
+  // The light-theme primary (#4361ee) is too dark to read on a dark surface — used
+  // everywhere via var(--bs-primary)/-rgb for text, icons and tints. Lighten it for
+  // dark mode so all of those become legible in one place. White text still reads on
+  // the lighter fill, and tints just get a touch brighter.
+  --bs-primary:            #7f9cff;
+  --bs-primary-rgb:        127, 156, 255;
+
   --card-shadow:           0 2px 12px rgba(0, 0, 0, 0.3);
   --card-shadow-hover:     0 6px 24px rgba(0, 0, 0, 0.5);
   --score-excellent:       #2dc653;
@@ -152,14 +159,14 @@ html, body {
     place-items: center;
     font-size: 1rem;
     color: #fff;
-    background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #4f46e5 100%);
     box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.32);
   }
 
   .brand-text { white-space: nowrap; }
 
   .brand-accent {
-    background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #4f46e5 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -187,7 +194,7 @@ html, body {
 }
 
 .hero-gradient-text {
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #4f46e5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -327,7 +334,7 @@ html, body {
   }
 
   i.bi-geo-alt-fill { color: #4361ee; background: rgba(67, 97, 238, 0.1); }
-  i.bi-envelope     { color: #7c3aed; background: rgba(124, 58, 237, 0.1); }
+  i.bi-envelope     { color: #4f46e5; background: rgba(79, 70, 229, 0.1); }
   i.bi-calendar3    { color: #159a4a; background: rgba(45, 198, 83, 0.12); }
 
   .pref-optional {
@@ -361,7 +368,7 @@ html, body {
 
 .btn-check:checked + .week-btn {
   color: #fff;
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #4f46e5 100%);
   border-color: transparent;
   box-shadow: 0 3px 10px rgba(var(--bs-primary-rgb), 0.32);
 }
@@ -408,7 +415,7 @@ html, body {
 
 // ── Submit button ─────────────────────────────────────────────────────────────
 .submit-btn {
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #4338ca 100%);
   border: none;
   border-radius: 0.6rem;
   padding: 0.85rem 2rem;
@@ -421,7 +428,7 @@ html, body {
 
   &:hover:not(:disabled) {
     color: #fff;
-    background: linear-gradient(135deg, #3451d1 0%, #5b21b6 100%);
+    background: linear-gradient(135deg, #3451d1 0%, #3730a3 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(67, 97, 238, 0.3);
     border: none;
@@ -628,7 +635,7 @@ html, body {
     place-items: center;
     font-size: 1.15rem;
     color: #fff;
-    background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #4f46e5 100%);
     box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.28);
   }
 
@@ -743,7 +750,7 @@ html, body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--bs-primary) 0%, #7c3aed 55%, rgba(124, 58, 237, 0.35) 100%);
+  background: linear-gradient(90deg, var(--bs-primary) 0%, #4f46e5 55%, rgba(79, 70, 229, 0.35) 100%);
 }
 
 // On mobile the CV tips collapse into an accordion (closed by default) so they
@@ -928,69 +935,109 @@ html, body {
     list-style: none;
     margin: 0 0 1.05rem;
     padding: 0.75rem 0.9rem;
-    border: 1px dashed var(--bs-border-color);
+    border: 1px solid var(--bs-border-color);
     border-radius: 0.6rem;
-    background: rgba(var(--bs-secondary-rgb), 0.04);
+    background: rgba(var(--bs-secondary-rgb), 0.05);
 
     li {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
       gap: 0.35rem;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       line-height: 1.5;
-      & + li { margin-top: 0.35rem; }
-      i { color: var(--bs-primary); opacity: 0.8; }
+      i { color: var(--bs-primary); opacity: 0.85; font-size: 0.8rem; }
+    }
+    // Divider between content rows (Езици и фреймуорци | Инструменти | +N още).
+    li + li {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--bs-border-color);
+    }
+    // Row right after the heading needs no divider — the heading already has one.
+    .stack-legend-heading + li {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
     }
     .stack-legend-heading {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--bs-body-color);
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--bs-border-color);
+      gap: 0.35rem;
+      i { color: var(--bs-primary); opacity: 1; }
+    }
+    // Match the "Най-търсени" group labels: small, bold, uppercase.
+    .stack-legend-label {
+      font-size: 0.66rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      opacity: 0.55;
-      margin-bottom: 0.5rem;
-      gap: 0.3rem;
+      opacity: 0.7;
     }
-    .stack-legend-label { font-weight: 600; }
-    .stack-legend-items { opacity: 0.75; }
+    .stack-legend-items { font-weight: 500; color: var(--bs-body-color); }
   }
 
   // Market view: most-requested technologies across the in-period listings.
+  // Its own bordered panel (solid, neutral slate tint) so it reads as a distinct
+  // section next to / below the blue "Твоят стек" — professional, lets blue lead.
   .tech-demand {
     margin-top: 1.1rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.6rem;
+    background: rgba(var(--bs-secondary-rgb), 0.05);
 
     .tech-demand-title {
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.74rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
-      opacity: 0.55;
-      margin-bottom: 0.55rem;
+      letter-spacing: 0.04em;
+      color: var(--bs-body-color);
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--bs-border-color);
+      i { color: var(--bs-primary); }
     }
     // Compact 2-column layout: aligned labels on the left, pills flowing on the right.
     .tech-demand-groups {
       display: grid;
       grid-template-columns: auto 1fr;
       column-gap: 0.6rem;
-      row-gap: 0.4rem;
+      row-gap: 0;
       align-items: start;
     }
     // Each group's label + list become cells of the shared grid so labels line up in one column.
     .tech-demand-group { display: contents; }
+    // Thin divider between successive groups (both grid cells get a top border →
+    // a continuous rule across the row) so "Езици / Фреймуорци / …" don't blur together.
+    .tech-demand-group:not(:first-child) {
+      .tech-demand-group-label,
+      .tech-demand-list {
+        border-top: 1px solid var(--bs-border-color);
+        margin-top: 0.45rem;
+        padding-top: 0.5rem;
+      }
+    }
     .tech-demand-group-label {
       display: inline-flex;
       align-items: center;
       justify-content: flex-start;
       gap: 0.3rem;
-      padding-top: 0.22rem;
+      padding-top: 0.28rem;
       font-size: 0.66rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      opacity: 0.55;
+      opacity: 0.7;
       white-space: nowrap;
 
-      i { color: var(--bs-primary); opacity: 0.8; font-size: 0.9em; }
+      i { color: var(--bs-primary); opacity: 0.85; font-size: 0.8rem; }
     }
     .tech-demand-list {
       display: flex;
@@ -1021,11 +1068,16 @@ html, body {
     }
 
     // On very narrow screens stack label above its pills (grid columns get cramped).
+    // In single-column mode the divider must sit only above the label, not also
+    // between the label and its own pills.
     @media (max-width: 420px) {
-      .tech-demand-groups { grid-template-columns: 1fr; row-gap: 0.7rem; }
-      .tech-demand-group-label { justify-content: flex-start; padding-top: 0; margin-bottom: 0.35rem; }
+      .tech-demand-groups { grid-template-columns: 1fr; row-gap: 0; }
+      .tech-demand-group-label { justify-content: flex-start; margin-bottom: 0.4rem; }
+      .tech-demand-group:not(:first-child) {
+        .tech-demand-group-label { margin-top: 0.6rem; padding-top: 0.6rem; }
+        .tech-demand-list { border-top: none; margin-top: 0; padding-top: 0; }
+      }
     }
-    margin-top: 0;
   }
 
   // Key-number tiles sit at the top now; give them air before the detail block.
@@ -1153,13 +1205,21 @@ html, body {
   }
   .bi-chevron-down { font-size: 0.72rem; opacity: 0.7; }
 
-  // Full width on mobile + tablet so it's an easy, obvious tap target.
+  // Full width on mobile + tablet, styled like an accordion header: icon + text
+  // on the left, chevron pushed to the far right (and enlarged to match the
+  // other accordions' chevrons).
   @media (max-width: 991px) {
     display: flex;
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
     border-radius: 0.7rem;
     padding: 0.7rem 1rem;
+
+    .bi-chevron-down {
+      margin-left: auto;
+      font-size: 1rem;
+      opacity: 0.5;
+    }
   }
 }
 
@@ -1177,7 +1237,7 @@ html, body {
   place-items: center;
   font-size: 1.2rem;
   color: #fff;
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #4f46e5 100%);
   box-shadow: 0 4px 14px rgba(var(--bs-primary-rgb), 0.4);
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
