@@ -75,15 +75,15 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
               <>
                 <i className="bi bi-file-earmark-check-fill drop-zone-icon text-success" />
                 <div className="drop-zone-filename">{file.name}</div>
-                <div className="drop-zone-text mt-1">Кликни за замяна</div>
+                <div className="drop-zone-text mt-1">Натисни за замяна</div>
               </>
             ) : (
               <>
                 <i className="bi bi-cloud-upload drop-zone-icon" />
                 <div className="drop-zone-text">
-                  <strong>Провлачи PDF тук</strong> или кликни за избор
+                  <strong>Провлачи PDF тук</strong> или натисни за избор
                 </div>
-                <div className="drop-zone-text mt-1 small">Само PDF, макс. 5 MB</div>
+                <div className="drop-zone-text mt-1 small">(само PDF, макс. 5 MB)</div>
               </>
             )}
           </div>
