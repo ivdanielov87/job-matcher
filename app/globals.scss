@@ -349,9 +349,13 @@ html, body {
 // submit button) so the current choice is unmistakable.
 .week-btn {
   flex: 1 1 0;
-  min-width: 5rem;
+  min-width: 90px;
   border-radius: 0.6rem;
-  font-size: 0.82rem;
+  // Keep each label on ONE line, and scale the text down with the viewport so it
+  // never wraps ("2/3 седмици" wrapped while "1 седмица" didn't) nor overflows the
+  // button on narrow phones.
+  white-space: nowrap;
+  font-size: clamp(0.68rem, 2.4vw, 0.82rem);
   font-weight: 600;
   color: var(--bs-primary);
   background: rgba(var(--bs-primary-rgb), 0.06);
@@ -391,7 +395,13 @@ html, body {
   .pref-label { font-size: 0.78rem; }
   .prefs-section .form-select,
   .prefs-section .form-control { font-size: 0.8rem; }
-  .week-btn { font-size: 0.78rem; min-width: 4.25rem; }
+  // Tighter side padding so all three labels fit on one line even on the
+  // narrowest phones (font scales via the clamp() above; nowrap prevents wrap).
+  .week-btn {
+    min-width: 68px;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+  }
 }
 
 // ── Upload card ───────────────────────────────────────────────────────────────
@@ -824,7 +834,12 @@ html, body {
 .results-meta {
   margin-top: 0.4rem;
   font-size: 0.78rem;
-  opacity: 0.6;
+  // Muted text via colour (not opacity) so the icons below can stay full-colour.
+  color: var(--bs-secondary-color);
+
+  // Lightly tinted icons, matching the stats tiles' cool palette.
+  i.bi-calendar3 { color: #6366f1; } // period — indigo (same as the "За периода" tile)
+  i.bi-clock     { color: #0ea5e9; } // processing time — sky
 
   .results-meta-sep {
     margin-left: 0.7rem;
@@ -935,6 +950,16 @@ html, body {
       border-color: rgba(var(--bs-danger-rgb), 0.25);
       .stat-value, .stat-label i { color: var(--bs-danger); }
       .stat-label { opacity: 0.85; }
+    }
+
+    // Lightly tint the NEUTRAL tiles' icons in a cohesive cool palette (the good /
+    // bad tiles are already green / red). Keyed by icon so no markup change needed.
+    &:not(.stat-good):not(.stat-bad) .stat-label i {
+      opacity: 1;
+      &.bi-collection { color: #4361ee; } // В dev.bg — blue
+      &.bi-calendar3  { color: #6366f1; } // За периода — indigo
+      &.bi-stack      { color: #0ea5e9; } // По профила — sky
+      &.bi-search     { color: #14b8a6; } // Оценени — teal
     }
   }
 
