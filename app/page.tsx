@@ -166,7 +166,7 @@ export default function Home() {
                     {apiError}
                   </div>
                 )}
-                <CVUploadForm onSubmit={handleSubmit} loading={false} />
+                <CVUploadForm onSubmit={handleSubmit} />
               </div>
             </div>
           </>

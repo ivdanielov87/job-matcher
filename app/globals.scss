@@ -1719,3 +1719,18 @@ html, body {
   text-align: center;
   margin-top: auto;
 }
+
+// ── Reduced motion ────────────────────────────────────────────────────────────
+// Respect the OS "reduce motion" setting: collapse animations/transitions to a
+// near-instant tick (keeps end states, drops the movement). Covers spinners, the
+// animated progress bar, gradient/hover transitions, and chevron rotations.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

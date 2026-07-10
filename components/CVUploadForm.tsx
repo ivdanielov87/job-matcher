@@ -8,14 +8,13 @@ const PREFS_KEY = 'cvjm:prefs';
 
 interface Props {
   onSubmit: (file: File, form: FormData) => void;
-  loading: boolean;
 }
 
 const LOCATIONS = ['Remote', 'София', 'Пловдив', 'Варна', 'Бургас', 'Русе', 'Стара Загора'];
 const DAYS = [7, 14, 21];
 const WEEK_LABEL: Record<number, string> = { 7: '1 седмица', 14: '2 седмици', 21: '3 седмици' };
 
-export default function CVUploadForm({ onSubmit, loading }: Props) {
+export default function CVUploadForm({ onSubmit }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [form, setForm] = useState<FormData>({
@@ -204,22 +203,9 @@ export default function CVUploadForm({ onSubmit, loading }: Props) {
 
           {/* Submit */}
           <div className="mt-4 d-grid">
-            <button
-              type="submit"
-              className="btn submit-btn w-100"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" />
-                  Анализираме...
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-search me-2" />
-                  Намери подходящи обяви
-                </>
-              )}
+            <button type="submit" className="btn submit-btn w-100">
+              <i className="bi bi-search me-2" />
+              Намери подходящи обяви
             </button>
           </div>
 

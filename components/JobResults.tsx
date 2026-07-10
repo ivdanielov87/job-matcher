@@ -37,8 +37,13 @@ export default function JobResults({ data, onReset, daysBack }: Props) {
     review &&
     ((review.market_gaps?.length ?? 0) > 0 || (review.tips?.length ?? 0) > 0)
   );
-  const scrollToReview = () =>
-    document.getElementById('cv-review-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const scrollToReview = () => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('cv-review-anchor')?.scrollIntoView({
+      behavior: reduce ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  };
 
   return (
     <div>

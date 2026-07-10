@@ -20,7 +20,10 @@ export default function ScrollToTop() {
       className="scroll-top"
       aria-label="Нагоре"
       title="Нагоре"
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      onClick={() => {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      }}
     >
       <i className="bi bi-arrow-up" />
     </button>
